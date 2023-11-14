@@ -1,6 +1,6 @@
 import {defineString} from "firebase-functions/params";
 import {google} from "googleapis";
-import {VideoInfoItem} from "./model";
+import {VideoInfoItem} from "./model/video-info-item";
 
 export class YouTubeApiService {
   public youtube;

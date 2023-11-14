@@ -15,8 +15,9 @@ import {YouTubeApiService} from "./youtube";
 import {defineString} from "firebase-functions/params";
 import * as functions from "firebase-functions";
 import axios from "axios";
-import {VideoInfoItem} from "./model";
+import {VideoInfoItem} from "./model/video-info-item";
 import {onRequest} from "firebase-functions/v1/https";
+import {Firestore} from "firebase-admin/firestore";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -82,11 +83,9 @@ export const testYt = functions.pubsub
 
 export const testYt2 = onRequest(async (_, res) => {
   try {
-    const youtubeApiService = new YouTubeApiService();
-    const targetVideoId = defineString("TARGET_VIDEO_ID");
-    const videoInfo = await youtubeApiService.listVideoInfo(
-      targetVideoId.value(),
-    );
+    const videoInfo = await listVideoInfo();
+    const firestore: Firestore = admin.firestore();
+    const doc = {};
     res
       .status(200)
       .setHeader("Content-Type", "application/json")
@@ -97,11 +96,13 @@ export const testYt2 = onRequest(async (_, res) => {
   }
 });
 
-// async function listVideoInfo(): Promise<Array<VideoInfoItem>> {
-//   const youtubeApiService = new YouTubeApiService();
-//   const targetVideoId = defineString("TARGET_VIDEO_ID");
-//   return await youtubeApiService.listVideoInfo2(targetVideoId.value());
-// }
+/* */
+
+async function listVideoInfo(): Promise<Array<VideoInfoItem>> {
+  const youtubeApiService = new YouTubeApiService();
+  const targetVideoId = defineString("TARGET_VIDEO_ID");
+  return await youtubeApiService.listVideoInfo2(targetVideoId.value());
+}
 
 function createContent(videoInfo: VideoInfoItem | null): string {
   if (!videoInfo) {
