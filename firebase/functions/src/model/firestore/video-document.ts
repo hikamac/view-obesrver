@@ -1,22 +1,22 @@
 import {Timestamp} from "firebase-admin/firestore";
-import {VideoInfoItem} from "../video-info-item";
 
 export class VideoDocument {
-  videoId!: string;
-  title!: string;
-  updated!: Timestamp;
-  channelId!: string;
-  publishedAt!: Timestamp;
-  milestone!: number;
+  public videoId!: string;
+  public title!: string;
+  public updated!: Timestamp;
+  public channelId!: string;
+  public publishedAt!: Timestamp;
+  public milestone!: number;
+  public viewHistories: ViewHistory[] = [];
 
-  constructor(init: Partial<VideoInfoItem>) {
+  constructor(init: Partial<VideoDocument>) {
     Object.assign(this, init);
   }
 }
 
 export class ViewHistory {
-  created!: Timestamp;
-  viewCount!: number;
+  public created!: Timestamp;
+  public viewCount!: number;
 
   constructor(init: Partial<ViewHistory>) {
     Object.assign(this, init);
