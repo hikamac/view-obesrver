@@ -1,6 +1,6 @@
 import {defineString} from "firebase-functions/params";
 import {google} from "googleapis";
-import {VideoInfoItem} from "./model/video-info-item";
+import {VideoInfoItem} from "./model/youtube/video-info-item";
 
 export class YouTubeApiService {
   public youtube;
@@ -20,11 +20,13 @@ export class YouTubeApiService {
     return null;
   }
 
-  public async listVideoInfo2(videoId: string): Promise<Array<VideoInfoItem>> {
+  public async listVideoInfoItems(
+    videoId: string,
+  ): Promise<Array<VideoInfoItem>> {
     const params = {part: ["snippet", "statistics"], id: [videoId]};
     const list = await this.youtube.videos.list(params);
     if (list.data.items != null) {
-      return list.data as Array<VideoInfoItem>;
+      return list.data.items as Array<VideoInfoItem>;
     }
     return [];
   }

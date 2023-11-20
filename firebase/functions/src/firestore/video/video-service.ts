@@ -41,13 +41,13 @@ export class VideoService extends FirestoreService {
    * @param {string} videoId YouTube video id
    * @param {number} viewCount video's view count
    */
-  async updateViewCount(videoId: string, viewCount: number) {
-    const succeed = await this.firestore.runTransaction(async (tx) => {
+  async updateViewCount(videoId: string, viewCount: number): Promise<void> {
+    await this.firestore.runTransaction(async (tx) => {
       const now = FieldValue.serverTimestamp();
 
       const videoDocs = await tx.get(this.buildQueryRef(videoId));
       if (!this.exists(videoDocs)) {
-        return false;
+        throw new Error("video document doesn't exist: " + videoId);
       } else {
         const videoDoc = videoDocs.docs[0];
         const videoDocData = videoDoc.data() as VideoDocument;
@@ -62,7 +62,6 @@ export class VideoService extends FirestoreService {
         };
 
         tx.update(videoDoc.ref, newData);
-        return true;
       }
     });
   }
