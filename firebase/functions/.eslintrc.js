@@ -31,5 +31,13 @@ module.exports = {
     "indent": ["error", 2],
     "object-curly-spacing": ["error", "never"],
     "require-jsdoc": 0,
+    "operator-linebreak": [
+      "error", "after", {
+        "overrides": {
+          "?": "ignore",
+          ":": "ignore",
+        },
+      },
+    ],
   },
 };
