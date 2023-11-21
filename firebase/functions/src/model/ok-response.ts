@@ -15,6 +15,6 @@ export class OkResponse {
 }
 
 enum Result {
-  OK,
-  NG,
+  OK = "OK",
+  NG = "NG",
 }
