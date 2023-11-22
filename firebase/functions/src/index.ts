@@ -17,10 +17,15 @@ import * as functions from "firebase-functions";
 import axios from "axios";
 import {VideoInfoItem} from "./model/youtube/video-info-item";
 import {onRequest} from "firebase-functions/v1/https";
-import {Firestore} from "firebase-admin/firestore";
+import {FieldValue, Firestore, Timestamp} from "firebase-admin/firestore";
 import {VideoService} from "./firestore/video/video-service";
 import {OkResponse} from "./model/ok-response";
 import {DocumentNotFoundException} from "./model/firestore/original-exceptions";
+import {
+  VideoDocumentBuilder,
+  ViewHistory,
+  calcMilestone,
+} from "./model/firestore/video-document";
 // import {Firestore} from "firebase-admin/firestore";
 
 // Start writing functions
@@ -88,15 +93,39 @@ export const testYt = functions.pubsub
 export const singleInsert = onRequest(async (_, res) => {
   try {
     const videoInfo = await listVideoInfo();
-    const firstVideoInfo = videoInfo[0];
+    const vi = videoInfo[0];
 
     const firestore: Firestore = admin.firestore();
     const videoService = new VideoService(firestore);
 
-    await videoService.insert(firstVideoInfo);
+    const builder = new VideoDocumentBuilder();
+    const viewCount = Number(vi.statistics.viewCount);
+    const milestone: number = calcMilestone(viewCount);
+    const videoDoc = builder
+      .videoId(vi.id)
+      .title(vi.snippet.title)
+      .updated(FieldValue.serverTimestamp())
+      .channelId(vi.snippet.channelId)
+      .publishedAt(Timestamp.fromDate(new Date(vi.snippet.publishedAt)))
+      .milestone(milestone)
+      .build();
+
+    const docRef = await videoService.insert(videoDoc);
+    const videoHistory = new ViewHistory({
+      viewCount: viewCount,
+    });
+    await videoService.insertHistory(docRef, videoHistory);
+
+    res
+      .status(200)
+      .setHeader("Content-Type", "application/json")
+      .send(OkResponse.OK);
   } catch (err) {
     logger.error("error", err);
-    res.status(500).setHeader("Content-Type", "text/plain").send(OkResponse.NG);
+    res
+      .status(500)
+      .setHeader("Content-Type", "application/json")
+      .send(OkResponse.NG);
   }
 });
 

@@ -10,6 +10,8 @@ import {
 } from "firebase-admin/firestore";
 
 export class VideoService extends FirestoreService {
+  COLLECTION_NAME = "video";
+  SUB_COLLECTION_NAME = "view-history";
   ref = this.firestore.collection("video");
 
   constructor(firestore: Firestore) {
@@ -30,11 +32,31 @@ export class VideoService extends FirestoreService {
   }
 
   async insert(doc: VideoDocument): Promise<DocumentReference<DocumentData>> {
-    return await this.ref.add(doc);
+    return await this.ref.add(doc.parseObj());
   }
 
   async insertWithKey(key: string, doc: VideoDocument): Promise<WriteResult> {
-    return await this.ref.doc(key).set(doc);
+    return await this.ref.doc(key).set(doc.parseObj());
+  }
+
+  async insertHistory(
+    doc: DocumentReference,
+    history: ViewHistory,
+  ): Promise<DocumentReference<DocumentData>> {
+    return await doc
+      .collection(this.SUB_COLLECTION_NAME)
+      .add(history.parseObj());
+  }
+
+  async insertHistoryWithKey(
+    doc: DocumentReference,
+    key: string,
+    history: ViewHistory,
+  ) {
+    return await doc
+      .collection(this.SUB_COLLECTION_NAME)
+      .doc(key)
+      .set(history.parseObj());
   }
 
   /**
