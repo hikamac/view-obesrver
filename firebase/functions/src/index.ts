@@ -110,11 +110,10 @@ export const singleInsert = onRequest(async (_, res) => {
       .milestone(milestone)
       .build();
 
-    const docRef = await videoService.insert(videoDoc);
     const videoHistory = new ViewHistory({
       viewCount: viewCount,
     });
-    await videoService.insertHistory(docRef, videoHistory);
+    await await videoService.insert(videoDoc, videoHistory);
 
     res
       .status(200)
