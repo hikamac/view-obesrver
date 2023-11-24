@@ -113,7 +113,7 @@ export const singleInsert = onRequest(async (_, res) => {
     const videoHistory = new ViewHistory({
       viewCount: viewCount,
     });
-    await await videoService.insert(videoDoc, videoHistory);
+    await videoService.insert(videoDoc, videoHistory);
 
     res
       .status(200)
@@ -131,16 +131,27 @@ export const singleInsert = onRequest(async (_, res) => {
 export const singleUpdate = onRequest(async (_, res) => {
   try {
     const videoInfos = await listVideoInfo();
-    const firstVideoInfo = videoInfos[0];
+    const vi = videoInfos[0];
 
     const firestore: Firestore = admin.firestore();
     const videoService = new VideoService(firestore);
 
     try {
-      await videoService.updateViewCount(
-        firstVideoInfo.id,
-        Number(firstVideoInfo.statistics.viewCount),
-      );
+      const builder = new VideoDocumentBuilder();
+      const viewCount = Number(vi.statistics.viewCount);
+      const milestone: number = calcMilestone(viewCount);
+      const videoDoc = builder
+        .videoId(vi.id)
+        .title(vi.snippet.title)
+        .updated(FieldValue.serverTimestamp())
+        .channelId(vi.snippet.channelId)
+        .publishedAt(Timestamp.fromDate(new Date(vi.snippet.publishedAt)))
+        .milestone(milestone)
+        .build();
+      const videoHistory = new ViewHistory({
+        viewCount: viewCount,
+      });
+      await videoService.update(videoDoc, videoHistory);
     } catch (err) {
       if (err instanceof DocumentNotFoundException) {
         console.warn(err.message);

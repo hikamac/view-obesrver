@@ -41,8 +41,36 @@ export class VideoService extends FirestoreService {
     batch.set(docRef, doc.parseObj());
 
     const subDocRef = docRef.collection(this.SUB_COLLECTION_NAME).doc();
-    batch.set(subDocRef, history);
+    batch.set(subDocRef, history.parseObj());
     return await batch.commit();
+  }
+
+  async update(
+    doc: VideoDocument,
+    history: ViewHistory,
+  ): Promise<WriteResult[]> {
+    return await this.firestore.runTransaction(async (tx) => {
+      const now = FieldValue.serverTimestamp();
+
+      const videoDocs = await tx.get(this.buildQueryRef(doc.videoId));
+      if (!this.exists(videoDocs)) {
+        throw new Error("video document doesn't exist: " + doc.videoId);
+      }
+
+      const videoDoc = videoDocs.docs[0];
+      const videoDocData = videoDoc.data() as VideoDocument;
+      const newData = {
+        ...videoDocData,
+        updated: now,
+      };
+
+      const batch = this.firestore.batch();
+      const docRef = videoDoc.ref;
+      batch.update(docRef, newData);
+      const subDocRef = docRef.collection(this.SUB_COLLECTION_NAME).doc();
+      batch.set(subDocRef, history.parseObj());
+      return await batch.commit();
+    });
   }
 
   async insertWithKey(key: string, doc: VideoDocument): Promise<WriteResult> {
