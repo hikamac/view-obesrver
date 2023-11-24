@@ -90,6 +90,42 @@ export const testYt = functions.pubsub
     }
   });
 
+/**
+ * @POST
+ * add new video document into "video" collection
+ * @param {string} videoId YouTube video ID
+ */
+export const initializeDocument = onRequest(async (_, res) => {
+  //TODO
+});
+
+/**
+ * @PUT
+ * record view count of documents in "video" collection.
+ * if the view count is about to reach the milestone,
+ * then also add the notification in "news" collection.
+ * freq: every 10 minutes(48/d)
+ */
+export const updateViewCounts = functions.pubsub
+  .schedule("0,10,20,30,40,50 * * * *")
+  .timeZone("Asia/Tokyo")
+  .onRun(async () => {
+    // TODO
+  });
+
+/**
+ * @PUT
+ * add the notification in "news" collection
+ * if the day is anniversary.
+ * FREQ: every 0 of days(1/d)
+ */
+export const checkTheAniversaryDay = functions.pubsub
+  .schedule("0 0 * * *")
+  .timeZone("Asia/Tokyo")
+  .onRun(async () => {
+    // TODO
+  });
+
 export const singleInsert = onRequest(async (_, res) => {
   try {
     const videoInfo = await listVideoInfo();
