@@ -1,20 +1,17 @@
 export class OkResponse {
-  r: Result;
+  r: OkNg;
 
-  constructor(r: Result) {
+  constructor(r: OkNg) {
     this.r = r;
   }
 
   public static get OK() {
-    return new OkResponse(Result.OK);
+    return new OkResponse("OK");
   }
 
   public static get NG() {
-    return new OkResponse(Result.NG);
+    return new OkResponse("NG");
   }
 }
 
-enum Result {
-  OK = "OK",
-  NG = "NG",
-}
+type OkNg = "OK" | "NG";
