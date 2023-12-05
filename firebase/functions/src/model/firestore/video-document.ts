@@ -1,6 +1,7 @@
 import {FieldValue, Timestamp} from "firebase-admin/firestore";
+import {DocumentModel} from "./document-model";
 
-export class VideoDocument {
+export class VideoDocument extends DocumentModel {
   public videoId!: string;
   public title!: string;
   public updated!: Timestamp | FieldValue;
@@ -9,38 +10,20 @@ export class VideoDocument {
   public milestone!: number;
 
   constructor(init: Partial<VideoDocument>) {
-    Object.assign(this, init);
-  }
-
-  parseObj(): {[key: string]: unknown} {
-    return {
-      videoId: this.videoId,
-      title: this.title,
-      updated: this.updated,
-      channelId: this.channelId,
-      publishedAt: this.publishedAt,
-      milestone: this.milestone,
-    };
+    super(init);
   }
 }
 
 // sub doc
-export class ViewHistory {
+export class ViewHistory extends DocumentModel {
   public created!: Timestamp | FieldValue;
   public viewCount!: number;
 
   constructor(init: Partial<ViewHistory>) {
+    super(init);
     if (!("created" in init)) {
       this.created = FieldValue.serverTimestamp();
     }
-    Object.assign(this, init);
-  }
-
-  parseObj(): {[key: string]: unknown} {
-    return {
-      created: this.created,
-      viewCount: this.viewCount,
-    };
   }
 }
 
