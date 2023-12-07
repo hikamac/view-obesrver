@@ -1,4 +1,5 @@
-import {VideoDocument, ViewHistory} from "../../model/firestore/video-document";
+import {VideoDocument, ViewHistory}
+  from "../../../model/firestore/video-document";
 import {FirestoreService} from "../firestore-service";
 import {
   DocumentData,
@@ -16,6 +17,19 @@ export class VideoService extends FirestoreService {
 
   constructor(firestore: Firestore) {
     super(firestore);
+  }
+
+  /**
+   *
+   * @return {Promise<Array<VideoDocument>>} only surface documents
+   */
+  async select(): Promise<Array<VideoDocument>> {
+    const docArray: VideoDocument[] = [];
+    const snapshot = await this.ref.get();
+    snapshot.forEach((doc) => {
+      docArray.push(doc.data() as VideoDocument);
+    });
+    return docArray;
   }
 
   async selectByVideoId(videoId: string): Promise<VideoDocument | null> {
@@ -125,6 +139,43 @@ export class VideoService extends FirestoreService {
       });
 
       tx.create(videoDoc.ref, vh.parseObj());
+    });
+  }
+
+  async bulkUpdate(videoIdAndViewCounts: Record<string, number>)
+    : Promise<void> {
+    await this.firestore.runTransaction(async (tx) => {
+      const now = FieldValue.serverTimestamp();
+
+      const videos = await tx.get(this.ref);
+      if (!this.exists(videos)) {
+        throw new Error("video document doesn't exist");
+      }
+
+      const videoIdAndDocs: Map<string, DocumentData> =
+        new Map(videos.docs.map((vd) => {
+          const videoDocument = vd.data() as VideoDocument;
+          return [videoDocument.videoId, vd];
+        }));
+
+      for (const videoId of Object.keys(videoIdAndViewCounts)) {
+        // update "video"
+        const documentData = videoIdAndDocs.get(videoId);
+        const videoDocument = documentData?.data() as VideoDocument;
+        const viewCount = videoIdAndViewCounts[videoId];
+        const newData = {
+          ...videoDocument,
+          updated: now,
+        };
+        tx.update(documentData?.ref, newData);
+
+        // insert "viewHistory" into "video"
+        const vh: ViewHistory = new ViewHistory({
+          created: now,
+          viewCount: viewCount,
+        });
+        tx.create(documentData?.ref, vh.parseObj());
+      }
     });
   }
 
