@@ -18,7 +18,7 @@ import axios from "axios";
 import {VideoInfoItem} from "./model/youtube/video-info-item";
 import {onRequest} from "firebase-functions/v1/https";
 import {FieldValue, Firestore, Timestamp} from "firebase-admin/firestore";
-import {VideoService} from "./firestore/video/video-service";
+import {VideoService} from "./service/firestore/video/video-service";
 import {OkResponse} from "./model/ok-response";
 import {DocumentNotFoundException} from "./model/firestore/original-exceptions";
 import {
@@ -90,14 +90,14 @@ export const testYt = functions.pubsub
     }
   });
 
-/**
- * @POST
- * add new video document into "video" collection
- * @param {string} videoId YouTube video ID
- */
-export const initializeDocument = onRequest(async (_, res) => {
-  //TODO
-});
+// /**
+//  * @POST
+//  * add new video document into "video" collection
+//  * @param {string} videoId YouTube video ID
+//  */
+// export const initializeDocument = onRequest(async (_, res) => {
+//   // TODO
+// });
 
 /**
  * @PUT
