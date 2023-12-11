@@ -78,11 +78,13 @@ export class VideoDocumentBuilder {
 }
 
 /**
- * 指定された視聴回数に基づいて次の目標を計算する。
+ * Calculate the next milestone based on the number of views.
  *
- * @param {number} viewCount - 現在の視聴回数。
- * @return {number} 次の目標。視聴回数が1000未満の場合は1000、100万以上の場合は100万刻み、
- * それ以外の場合は現在の桁数の次の10倍。
+ * @param {number} viewCount - current view count
+ * @return {number} - Next milestone.
+ * If the number of views is less than 1,000, the number is 1,000;
+ * if the number is 1,000,000 or more, the number is in increments of 1,000,000,
+ * If otherwise, the next 10 times the current digit.
  *
  * @example
  * calcMilestone(500); // returns 1000
@@ -109,4 +111,19 @@ export const calcMilestone = (viewCount: number): number => {
   return viewCount < milestone
     ? milestone
     : Math.ceil(viewCount / milestone) * milestone;
+};
+
+/**
+ * Determine if it is approaching the next milestone.
+ * Cases exceeding milestones are not addressed.
+ * @param {number} currentViewCount - current view count
+ *
+ * @return {boolean}
+ */
+export const isCloseToNextMilestone = (currentViewCount: number): boolean => {
+  const nextMilestone = calcMilestone(currentViewCount);
+  const digits = Math.floor(Math.log10(nextMilestone)) - 2;
+  const thresholdSubtractor = Math.pow(10, digits) * 5;
+  const threshold = nextMilestone - thresholdSubtractor;
+  return currentViewCount >= threshold;
 };

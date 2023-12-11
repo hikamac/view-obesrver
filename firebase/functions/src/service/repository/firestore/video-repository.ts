@@ -35,8 +35,9 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
 
   public async updateViewCounts(idAndViewCounts: Record<string, number>) {
     const videoIds = Object.keys(idAndViewCounts);
-    const where = this.getCollection().where("videoId", "in", videoIds);
     this.runTransaction(async (tx: Transaction) => {
+      // get video documents
+      const where = this.getCollection().where("videoId", "in", videoIds);
       const snapshot = await tx.get(where);
       if (!this.exists(snapshot)) {
         return null;
@@ -49,6 +50,18 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
           },
           {} as Record<string, VideoDocument>,
         );
+
+      for (const [id, videoDoc] of Object.entries(documentIdAndData)) {
+        // add sub documents under each video document
+        const videoDocRef = this.getCollection().doc(id);
+        const viewCount = idAndViewCounts[videoDoc.videoId];
+        if (viewCount === null || viewCount === undefined) continue;
+        const viewHistory = new ViewHistory({viewCount: viewCount});
+        this.addViewHistoryTx(tx, videoDocRef, viewHistory);
+
+        // update video document and create news
+      }
+
       const batch = this.startBatch();
       for (const [id, videoDoc] of Object.entries(documentIdAndData)) {
         const videoDocRef = this.getCollection().doc(id);
@@ -68,13 +81,43 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     });
   }
 
+  public async getByVideoIdsInTx(
+    tx: Transaction,
+    videoIds: string[],
+  ): Promise<Record<string, VideoDocument>> {
+    // TODO:
+    const query = this.getCollection().where("videoId", "in", videoIds);
+    const snapshot = await this.getInTx(tx, query);
+    if (!this.exists(snapshot)) {
+      return {};
+    }
+    const documentIdAndData: Record<string, VideoDocument> =
+      snapshot.docs.reduce(
+        (acc, doc) => {
+          acc[doc.id] = doc.data();
+          return acc;
+        },
+        {} as Record<string, VideoDocument>,
+      );
+    return documentIdAndData;
+  }
+
+  public async addViewHistoryInTx(
+    tx: Transaction,
+    docId: string,
+    viewHistory: ViewHistory,
+  ) {
+    const ref = this.getCollection().doc(docId);
+    return this.addSubDocInTx(tx, ref, SUB_COLLECTION_NAME, viewHistory);
+  }
+
   public async updateViewCountsTx(
     tx: Transaction,
     idAndViewCounts: Record<string, number>,
   ): Promise<void> {
     const videoIds = Object.keys(idAndViewCounts);
     const where = this.getCollection().where("videoId", "in", videoIds);
-    const snapshot = await tx.get(where);
+    const snapshot = await this.getInTx(tx, where);
     if (!this.exists(snapshot)) {
       return;
     }
@@ -120,6 +163,14 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       updated: FieldValue.serverTimestamp(),
     };
     batch.update(ref, newVideoDoc);
+  }
+
+  private addViewHistoryTx(
+    tx: Transaction,
+    ref: DocumentReference<VideoDocument>,
+    viewHistory: ViewHistory,
+  ) {
+    return this.addSubDocInTx(tx, ref, SUB_COLLECTION_NAME, viewHistory);
   }
 
   private addViewHistory(

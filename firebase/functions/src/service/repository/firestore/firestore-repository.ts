@@ -5,6 +5,7 @@ import {
   DocumentSnapshot,
   Firestore,
   FirestoreDataConverter,
+  Query,
   QueryDocumentSnapshot,
   QuerySnapshot,
   Transaction,
@@ -28,19 +29,63 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
       .withConverter(this.converter());
   }
 
+  /* Transaction */
+
   protected async runTransaction<R>(
     operation: (tx: Transaction) => Promise<R>,
   ): Promise<R> {
     return this.firestore.runTransaction(operation);
   }
 
+  protected async getInTx(
+    tx: Transaction,
+    docRef: DocumentReference,
+  ): Promise<DocumentSnapshot<T>>;
+  protected async getInTx(
+    tx: Transaction,
+    query: Query<T>,
+  ): Promise<QuerySnapshot<T>>;
+  protected async getInTx(tx: Transaction, arg: DocumentReference | Query<T>) {
+    if (arg instanceof DocumentReference) {
+      return tx.get(arg);
+    } else {
+      return tx.get(arg);
+    }
+  }
+
+  protected async addInTx(
+    tx: Transaction,
+    docRef: DocumentReference<T>,
+    data: T,
+  ) {
+    return tx.set(docRef, data);
+  }
+
+  protected async addSubDocInTx<S extends DocumentModel>(
+    tx: Transaction,
+    docRef: DocumentReference<T>,
+    subCollectionName: string,
+    data: S,
+  ) {
+    const subDocRef = docRef.collection(subCollectionName).doc();
+    return tx.set(subDocRef, data);
+  }
+
+  protected async updateInTx(
+    tx: Transaction,
+    docRef: DocumentReference<T>,
+    data: Partial<T>,
+  ) {
+    return tx.update(docRef, data as UpdateData<T>);
+  }
+
   /* Batch */
 
-  public startBatch(): WriteBatch {
+  protected startBatch(): WriteBatch {
     return this.firestore.batch();
   }
 
-  public addWithBatch(
+  protected addWithBatch(
     batch: WriteBatch,
     docRef: DocumentReference<T>,
     data: T,
@@ -48,7 +93,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     batch.set(docRef, data);
   }
 
-  public addSubDocumentWithBatch<S extends DocumentModel>(
+  protected addSubDocumentWithBatch<S extends DocumentModel>(
     batch: WriteBatch,
     docRef: DocumentReference<T>,
     subCollectionName: string,
@@ -58,7 +103,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     batch.set(subDocRef, data);
   }
 
-  public updateInBatch(
+  protected updateWithBatch(
     batch: WriteBatch,
     docRef: DocumentReference<T>,
     data: Partial<T>,
@@ -66,11 +111,11 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     batch.update(docRef, data as UpdateData<T>);
   }
 
-  public deleteInBatch(batch: WriteBatch, docRef: DocumentReference<T>) {
+  protected deleteInBatch(batch: WriteBatch, docRef: DocumentReference<T>) {
     batch.delete(docRef);
   }
 
-  public commitBatch(batch: WriteBatch) {
+  protected commitBatch(batch: WriteBatch) {
     return batch.commit();
   }
 
