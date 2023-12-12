@@ -1,3 +1,5 @@
+import {FieldValue, Timestamp} from "firebase-admin/firestore";
+
 export class DocumentModel {
   [key: string]: unknown;
 
@@ -13,3 +15,13 @@ export class DocumentModel {
     return obj;
   }
 }
+
+export type Any =
+  | string
+  | number
+  | boolean
+  | null
+  | unknown
+  | object
+  | Timestamp
+  | FieldValue;

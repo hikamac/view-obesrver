@@ -33,9 +33,9 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     tx: Transaction,
     videoIds: string[],
   ): Promise<Record<string, VideoDocument>> {
-    const query = this.getCollection().where("videoId", "in", videoIds);
-    const snapshot = await this.getInTx(tx, query);
-    if (!this.exists(snapshot)) {
+    const query = super.getCollection().where("videoId", "in", videoIds);
+    const snapshot = await super.getInTx(tx, query);
+    if (!super.exists(snapshot)) {
       return {};
     }
     const documentIdAndData: Record<string, VideoDocument> =
@@ -54,7 +54,7 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     docId: string,
     videoDocument: VideoDocument,
   ) {
-    const ref = this.getCollection().doc(docId);
+    const ref = super.getCollection().doc(docId);
     await super.updateInTx(tx, ref, videoDocument);
   }
 
@@ -63,7 +63,7 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     docId: string,
     viewHistory: ViewHistory,
   ) {
-    const ref = this.getCollection().doc(docId);
-    return this.addSubDocInTx(tx, ref, SUB_COLLECTION_NAME, viewHistory);
+    const ref = super.getCollection().doc(docId);
+    return super.addSubDocInTx(tx, ref, SUB_COLLECTION_NAME, viewHistory);
   }
 }

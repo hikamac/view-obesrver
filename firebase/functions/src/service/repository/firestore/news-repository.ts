@@ -1,4 +1,8 @@
-import {Firestore, FirestoreDataConverter} from "firebase-admin/firestore";
+import {
+  Firestore,
+  FirestoreDataConverter,
+  Transaction,
+} from "firebase-admin/firestore";
 import {FirestoreRepository} from "./firestore-repository";
 import {NewsDocument} from "../../../model/firestore/news-document";
 import {QueryDocumentSnapshot} from "firebase-functions/v1/firestore";
@@ -19,5 +23,10 @@ export class NewsRepository extends FirestoreRepository<NewsDocument> {
         return snapshot.data() as NewsDocument;
       },
     };
+  }
+
+  public async addNewsInTx(tx: Transaction, newsDoc: NewsDocument) {
+    const ref = super.getCollection().doc();
+    await super.addInTx(tx, ref, newsDoc);
   }
 }

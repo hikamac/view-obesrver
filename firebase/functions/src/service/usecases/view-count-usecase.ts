@@ -1,13 +1,14 @@
 import * as admin from "firebase-admin";
 import {NewsRepository} from "../repository/firestore/news-repository";
 import {VideoRepository} from "../repository/firestore/video-repository";
-import {FieldValue, Transaction} from "firebase-admin/firestore";
+import {Transaction} from "firebase-admin/firestore";
 import {
   VideoDocument,
   ViewHistory,
   calcMilestone,
   isCloseToNextMilestone,
 } from "../../model/firestore/video-document";
+import {NewsDocument, NewsCategory} from "../../model/firestore/news-document";
 
 export class ViewCountUseCase {
   private firestore: admin.firestore.Firestore;
@@ -23,7 +24,6 @@ export class ViewCountUseCase {
     videoIdAndViewCounts: Record<string, number>,
   ): Promise<void> {
     this.firestore.runTransaction(async (tx: Transaction) => {
-      const now = FieldValue.serverTimestamp();
       const documentIdAndDocument: Record<string, VideoDocument> =
         await this.videoRepo.getByVideoIdsInTx(
           tx,
@@ -34,21 +34,59 @@ export class ViewCountUseCase {
         // update video document and create news
         const viewCount = videoIdAndViewCounts[doc.videoId];
         if (viewCount >= doc.milestone) {
-          // TODO: celebrate exceed milestone
-
-          const newVideoDoc = {
-            ...doc,
-            updated: now,
-            milestone: calcMilestone(viewCount),
-          } as VideoDocument;
-          await this.videoRepo.updateVideoInTx(tx, docId, newVideoDoc);
+          await this.celebrateReaching(tx, viewCount, doc.milestone);
+          await this.setNewMilestone(tx, docId, doc, viewCount);
         } else if (isCloseToNextMilestone(viewCount)) {
-          // TODO: notify being close to the milestone
+          await this.notifyApproacingMilestone(tx, viewCount, doc.milestone);
         }
         // add sub documents under each video document
         const viewHistory = new ViewHistory({viewCount: viewCount});
         await this.videoRepo.addViewHistoryInTx(tx, docId, viewHistory);
       }
     });
+  }
+
+  private async setNewMilestone(
+    tx: Transaction,
+    docId: string,
+    oldDoc: VideoDocument,
+    viewCount: number,
+  ): Promise<void> {
+    const newVideoDoc = {
+      ...oldDoc,
+      milestone: calcMilestone(viewCount),
+    } as VideoDocument;
+    newVideoDoc.setUpdatedNow();
+    await this.videoRepo.updateVideoInTx(tx, docId, newVideoDoc);
+  }
+
+  private async celebrateReaching(
+    tx: Transaction,
+    viewCount: number,
+    oldMilestone: number,
+  ): Promise<void> {
+    const newsDoc = new NewsDocument({
+      category: NewsCategory.VIEW_COUNT_REACHED,
+      properties: {
+        viewCount: viewCount,
+        milestone: oldMilestone,
+      },
+    });
+    await this.newsRepo.addNewsInTx(tx, newsDoc);
+  }
+
+  private async notifyApproacingMilestone(
+    tx: Transaction,
+    viewCount: number,
+    currentMilestone: number,
+  ): Promise<void> {
+    const newsDoc = new NewsDocument({
+      category: NewsCategory.VIEW_COUNT_APPROACH,
+      properties: {
+        viewCount: viewCount,
+        milestone: currentMilestone,
+      },
+    });
+    await this.newsRepo.addNewsInTx(tx, newsDoc);
   }
 }
