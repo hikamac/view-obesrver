@@ -26,7 +26,7 @@ import {
   ViewHistory,
   calcMilestone,
 } from "./model/firestore/video-document";
-import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
+import {SecretManager} from "./service/secret-manager";
 // import {Firestore} from "firebase-admin/firestore";
 
 // Start writing functions
@@ -41,13 +41,12 @@ admin.initializeApp(options);
 // });
 
 export const testSecret = onRequest(async (_, res) => {
-  const client = new SecretManagerServiceClient();
-  const name = client.secretVersionPath("observe-notify", "envvars", "1");
   try {
-    const [version] = await client.accessSecretVersion({name: name});
-    const payload = version.payload?.data?.toString();
-    console.log("secret data: %s", payload);
-    res.send(payload);
+    const secret = new SecretManager();
+    await secret.setUpAsync();
+    const targetVideoIds = secret.get("TARGET_VIDEO_IDS");
+    console.log("target video:" + targetVideoIds);
+    res.send(targetVideoIds);
   } catch (error) {
     logger.error(error);
     res.status(500).send(error);
