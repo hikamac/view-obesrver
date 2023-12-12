@@ -1,10 +1,11 @@
 import * as admin from "firebase-admin";
 import {NewsRepository} from "../repository/firestore/news-repository";
 import {VideoRepository} from "../repository/firestore/video-repository";
-import {Transaction} from "firebase-admin/firestore";
+import {FieldValue, Transaction} from "firebase-admin/firestore";
 import {
   VideoDocument,
   ViewHistory,
+  calcMilestone,
   isCloseToNextMilestone,
 } from "../../model/firestore/video-document";
 
@@ -22,6 +23,7 @@ export class ViewCountUseCase {
     videoIdAndViewCounts: Record<string, number>,
   ): Promise<void> {
     this.firestore.runTransaction(async (tx: Transaction) => {
+      const now = FieldValue.serverTimestamp();
       const documentIdAndDocument: Record<string, VideoDocument> =
         await this.videoRepo.getByVideoIdsInTx(
           tx,
@@ -33,7 +35,13 @@ export class ViewCountUseCase {
         const viewCount = videoIdAndViewCounts[doc.videoId];
         if (viewCount >= doc.milestone) {
           // TODO: celebrate exceed milestone
-          // TODO: set new milestone
+
+          const newVideoDoc = {
+            ...doc,
+            updated: now,
+            milestone: calcMilestone(viewCount),
+          } as VideoDocument;
+          await this.videoRepo.updateVideoInTx(tx, docId, newVideoDoc);
         } else if (isCloseToNextMilestone(viewCount)) {
           // TODO: notify being close to the milestone
         }

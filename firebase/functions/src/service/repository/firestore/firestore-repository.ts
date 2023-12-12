@@ -76,7 +76,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     docRef: DocumentReference<T>,
     data: Partial<T>,
   ) {
-    return tx.update(docRef, data as UpdateData<T>);
+    tx.update(docRef, data as UpdateData<T>);
   }
 
   /* Batch */
