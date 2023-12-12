@@ -26,6 +26,7 @@ import {
   ViewHistory,
   calcMilestone,
 } from "./model/firestore/video-document";
+import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 // import {Firestore} from "firebase-admin/firestore";
 
 // Start writing functions
@@ -38,6 +39,20 @@ admin.initializeApp(options);
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
+
+export const testSecret = onRequest(async (_, res) => {
+  const client = new SecretManagerServiceClient();
+  const name = client.secretVersionPath("observe-notify", "envvars", "1");
+  try {
+    const [version] = await client.accessSecretVersion({name: name});
+    const payload = version.payload?.data?.toString();
+    console.log("secret data: %s", payload);
+    res.send(payload);
+  } catch (error) {
+    logger.error(error);
+    res.status(500).send(error);
+  }
+});
 
 // export const addMock = onRequest(async (_, res) => {
 //   try {
@@ -106,7 +121,7 @@ export const testYt = functions.pubsub
  * then also add the notification in "news" collection.
  * freq: every 10 minutes(48/d)
  */
-export const updateViewCounts = functions.pubsub
+export const fetchViewCountsAndStore = functions.pubsub
   .schedule("0,10,20,30,40,50 * * * *")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
