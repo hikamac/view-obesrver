@@ -11,6 +11,7 @@ import {
   Transaction,
   UpdateData,
   WriteBatch,
+  WriteResult,
 } from "firebase-admin/firestore";
 import {DocumentModel} from "../../../model/firestore/document-model";
 
@@ -27,6 +28,10 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     return this.firestore
       .collection(this.collectionPath)
       .withConverter(this.converter());
+  }
+
+  protected async add(data: T) {
+    return this.getCollection().add(data);
   }
 
   /* Transaction */
@@ -58,7 +63,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     docRef: DocumentReference<T>,
     data: T,
   ) {
-    return tx.set(docRef, data.parseObj());
+    return tx.set(docRef, data);
   }
 
   protected async addSubDocInTx<S extends DocumentModel>(
@@ -68,7 +73,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     data: S,
   ) {
     const subDocRef = docRef.collection(subCollectionName).doc();
-    return tx.set(subDocRef, data.parseObj());
+    return tx.set(subDocRef, data);
   }
 
   protected async updateInTx(
@@ -76,7 +81,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     docRef: DocumentReference<T>,
     data: T,
   ) {
-    tx.update(docRef, data.parseObj() as UpdateData<T>);
+    tx.update(docRef, data as UpdateData<T>);
   }
 
   /* Batch */
@@ -85,12 +90,16 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     return this.firestore.batch();
   }
 
-  protected addWithBatch(
+  protected addWithBatch(batch: WriteBatch, data: T) {
+    batch.set(this.getCollection().doc(), data);
+  }
+
+  protected setWithBatch(
     batch: WriteBatch,
     docRef: DocumentReference<T>,
     data: T,
   ) {
-    batch.set(docRef, data.parseObj());
+    batch.set(docRef, data);
   }
 
   protected addSubDocumentWithBatch<S extends DocumentModel>(
@@ -100,7 +109,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     data: S,
   ) {
     const subDocRef = docRef.collection(subCollectionName).doc();
-    batch.set(subDocRef, data.parseObj());
+    batch.set(subDocRef, data);
   }
 
   protected updateWithBatch(
@@ -108,14 +117,14 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     docRef: DocumentReference<T>,
     data: T,
   ) {
-    batch.update(docRef, data.parseObj() as UpdateData<T>);
+    batch.update(docRef, data as UpdateData<T>);
   }
 
   protected deleteInBatch(batch: WriteBatch, docRef: DocumentReference<T>) {
     batch.delete(docRef);
   }
 
-  protected commitBatch(batch: WriteBatch) {
+  protected commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
     return batch.commit();
   }
 

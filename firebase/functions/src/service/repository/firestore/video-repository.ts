@@ -29,6 +29,14 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     };
   }
 
+  public async addVideos(videoDocuments: VideoDocument[]) {
+    const batch = super.startBatch();
+    for (const vd of videoDocuments) {
+      super.addWithBatch(batch, vd);
+    }
+    return await super.commitBatch(batch);
+  }
+
   public async getByVideoIdsInTx(
     tx: Transaction,
     videoIds: string[],

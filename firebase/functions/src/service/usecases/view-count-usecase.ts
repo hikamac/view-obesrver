@@ -9,18 +9,45 @@ import {
   isCloseToNextMilestone,
 } from "../../model/firestore/video-document";
 import {NewsDocument, NewsCategory} from "../../model/firestore/news-document";
+// prettier-ignore
+import {
+  YouTubeDataApiRepository,
+} from "../repository/youtube/youtube-repository";
 
 export class ViewCountUseCase {
+  private youtubeRepo: YouTubeDataApiRepository;
   private firestore: admin.firestore.Firestore;
   private videoRepo: VideoRepository;
   private newsRepo: NewsRepository;
-  constructor() {
+  constructor(youtubeDataApiKey: string) {
+    this.youtubeRepo = new YouTubeDataApiRepository(youtubeDataApiKey);
     this.firestore = admin.firestore();
     this.videoRepo = new VideoRepository(this.firestore);
     this.newsRepo = new NewsRepository(this.firestore);
   }
 
-  public async updateVideoAndCreateNewsIfNeeded(
+  public async fetchAndStore(targetVideoIds: string[]) {
+    const videoIdAndViewCounts =
+      await this.fetchViewCountsFromYouTube(targetVideoIds);
+    await this.updateVideoAndCreateNewsIfNeeded(videoIdAndViewCounts);
+  }
+
+  private async fetchViewCountsFromYouTube(
+    targetVideoIds: string[],
+  ): Promise<Record<string, number>> {
+    const videoInfos = await this.youtubeRepo.listVideoInfo(targetVideoIds, [
+      "statistics",
+    ]);
+    return videoInfos.reduce(
+      (pre, cur) => {
+        pre[cur.id] = Number(cur.statistics.viewCount);
+        return pre;
+      },
+      {} as Record<string, number>,
+    );
+  }
+
+  private async updateVideoAndCreateNewsIfNeeded(
     videoIdAndViewCounts: Record<string, number>,
   ): Promise<void> {
     this.firestore.runTransaction(async (tx: Transaction) => {

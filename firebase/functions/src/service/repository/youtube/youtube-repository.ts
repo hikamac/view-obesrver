@@ -1,13 +1,11 @@
-import {defineString} from "firebase-functions/params";
 import {google} from "googleapis";
 import {VideoInfoItem} from "../../../model/youtube/video-info-item";
 
 export class YouTubeDataApiRepository {
   protected youtube;
 
-  constructor() {
-    const apiKey = defineString("YOUTUBE_DATA_API_KEY");
-    this.youtube = google.youtube({version: "v3", auth: apiKey.value()});
+  constructor(apiKey: string) {
+    this.youtube = google.youtube({version: "v3", auth: apiKey});
   }
 
   public async listVideoInfo(
