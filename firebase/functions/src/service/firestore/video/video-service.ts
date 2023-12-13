@@ -1,5 +1,7 @@
-import {VideoDocument, ViewHistory}
-  from "../../../model/firestore/video-document";
+import {
+  VideoDocument,
+  ViewHistory,
+} from "../../../model/firestore/video-document";
 import {FirestoreService} from "../firestore-service";
 import {
   DocumentData,
@@ -52,10 +54,10 @@ export class VideoService extends FirestoreService {
     const batch = this.firestore.batch();
 
     const docRef = this.ref.doc();
-    batch.set(docRef, doc.parseObj());
+    batch.set(docRef, doc);
 
     const subDocRef = docRef.collection(this.SUB_COLLECTION_NAME).doc();
-    batch.set(subDocRef, history.parseObj());
+    batch.set(subDocRef, history);
     return await batch.commit();
   }
 
@@ -82,22 +84,20 @@ export class VideoService extends FirestoreService {
       const docRef = videoDoc.ref;
       batch.update(docRef, newData);
       const subDocRef = docRef.collection(this.SUB_COLLECTION_NAME).doc();
-      batch.set(subDocRef, history.parseObj());
+      batch.set(subDocRef, history);
       return await batch.commit();
     });
   }
 
   async insertWithKey(key: string, doc: VideoDocument): Promise<WriteResult> {
-    return await this.ref.doc(key).set(doc.parseObj());
+    return await this.ref.doc(key).set(doc);
   }
 
   async insertHistory(
     doc: DocumentReference,
     history: ViewHistory,
   ): Promise<DocumentReference<DocumentData>> {
-    return await doc
-      .collection(this.SUB_COLLECTION_NAME)
-      .add(history.parseObj());
+    return await doc.collection(this.SUB_COLLECTION_NAME).add(history);
   }
 
   async insertHistoryWithKey(
@@ -105,10 +105,7 @@ export class VideoService extends FirestoreService {
     key: string,
     history: ViewHistory,
   ) {
-    return await doc
-      .collection(this.SUB_COLLECTION_NAME)
-      .doc(key)
-      .set(history.parseObj());
+    return await doc.collection(this.SUB_COLLECTION_NAME).doc(key).set(history);
   }
 
   /**
@@ -138,12 +135,13 @@ export class VideoService extends FirestoreService {
         viewCount: viewCount,
       });
 
-      tx.create(videoDoc.ref, vh.parseObj());
+      tx.create(videoDoc.ref, vh);
     });
   }
 
-  async bulkUpdate(videoIdAndViewCounts: Record<string, number>)
-    : Promise<void> {
+  async bulkUpdate(
+    videoIdAndViewCounts: Record<string, number>,
+  ): Promise<void> {
     await this.firestore.runTransaction(async (tx) => {
       const now = FieldValue.serverTimestamp();
 
@@ -152,11 +150,12 @@ export class VideoService extends FirestoreService {
         throw new Error("video document doesn't exist");
       }
 
-      const videoIdAndDocs: Map<string, DocumentData> =
-        new Map(videos.docs.map((vd) => {
+      const videoIdAndDocs: Map<string, DocumentData> = new Map(
+        videos.docs.map((vd) => {
           const videoDocument = vd.data() as VideoDocument;
           return [videoDocument.videoId, vd];
-        }));
+        }),
+      );
 
       for (const videoId of Object.keys(videoIdAndViewCounts)) {
         // update "video"
@@ -174,7 +173,7 @@ export class VideoService extends FirestoreService {
           created: now,
           viewCount: viewCount,
         });
-        tx.create(documentData?.ref, vh.parseObj());
+        tx.create(documentData?.ref, vh);
       }
     });
   }

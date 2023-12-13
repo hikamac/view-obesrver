@@ -25,8 +25,12 @@ export class NewsRepository extends FirestoreRepository<NewsDocument> {
     };
   }
 
-  public async addNewsInTx(tx: Transaction, newsDoc: NewsDocument) {
-    const ref = super.getCollection().doc();
+  public async setNewsInTx(
+    tx: Transaction,
+    docId: string,
+    newsDoc: NewsDocument,
+  ) {
+    const ref = super.getCollection().doc(docId);
     await super.addInTx(tx, ref, newsDoc);
   }
 }

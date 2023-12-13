@@ -61,10 +61,22 @@ export class ViewCountUseCase {
         // update video document and create news
         const viewCount = videoIdAndViewCounts[doc.videoId];
         if (viewCount >= doc.milestone) {
-          await this.celebrateReaching(tx, viewCount, doc.milestone);
+          await this.celebrateReaching(
+            tx,
+            doc.videoId,
+            doc.title,
+            viewCount,
+            doc.milestone,
+          );
           await this.setNewMilestone(tx, docId, doc, viewCount);
         } else if (isCloseToNextMilestone(viewCount)) {
-          await this.notifyApproacingMilestone(tx, viewCount, doc.milestone);
+          await this.notifyApproacingMilestone(
+            tx,
+            doc.videoId,
+            doc.title,
+            viewCount,
+            doc.milestone,
+          );
         }
         // add sub documents under each video document
         const viewHistory = new ViewHistory({viewCount: viewCount});
@@ -89,31 +101,50 @@ export class ViewCountUseCase {
 
   private async celebrateReaching(
     tx: Transaction,
+    videoId: string,
+    videoTitle: string,
     viewCount: number,
     oldMilestone: number,
   ): Promise<void> {
+    const category = NewsCategory.VIEW_COUNT_REACHED;
     const newsDoc = new NewsDocument({
-      category: NewsCategory.VIEW_COUNT_REACHED,
+      videoId: videoId,
+      videoTitle: videoTitle,
+      category: category,
       properties: {
         viewCount: viewCount,
         milestone: oldMilestone,
       },
     });
-    await this.newsRepo.addNewsInTx(tx, newsDoc);
+    const docId = this.generateNewsDocumentId(category, videoId);
+    await this.newsRepo.setNewsInTx(tx, docId, newsDoc);
   }
 
   private async notifyApproacingMilestone(
     tx: Transaction,
+    videoId: string,
+    videoTitle: string,
     viewCount: number,
     currentMilestone: number,
   ): Promise<void> {
+    const category = NewsCategory.VIEW_COUNT_APPROACH;
     const newsDoc = new NewsDocument({
-      category: NewsCategory.VIEW_COUNT_APPROACH,
+      videoId: videoId,
+      videoTitle: videoTitle,
+      category: category,
       properties: {
         viewCount: viewCount,
         milestone: currentMilestone,
       },
     });
-    await this.newsRepo.addNewsInTx(tx, newsDoc);
+    const docId = this.generateNewsDocumentId(category, videoId);
+    await this.newsRepo.setNewsInTx(tx, docId, newsDoc);
+  }
+
+  private generateNewsDocumentId(
+    category: NewsCategory,
+    videoId: string,
+  ): string {
+    return `${category}-${videoId}`;
   }
 }

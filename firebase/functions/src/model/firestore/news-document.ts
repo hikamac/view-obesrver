@@ -4,6 +4,8 @@ import {Any, DocumentModel} from "./document-model";
 export class NewsDocument extends DocumentModel {
   public updated!: Timestamp | FieldValue;
   public created!: Timestamp | FieldValue;
+  public videoId!: string;
+  public videoTitle!: string;
   public category!: NewsCategory;
   public properties?: {[key: string]: Any};
   public url?: string;

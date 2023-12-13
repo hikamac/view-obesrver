@@ -17,15 +17,7 @@ import * as functions from "firebase-functions";
 import axios from "axios";
 import {VideoInfoItem} from "./model/youtube/video-info-item";
 import {onRequest} from "firebase-functions/v1/https";
-import {FieldValue, Firestore, Timestamp} from "firebase-admin/firestore";
-import {VideoService} from "./service/firestore/video/video-service";
 import {OkResponse} from "./model/ok-response";
-import {DocumentNotFoundException} from "./model/firestore/original-exceptions";
-import {
-  VideoDocumentBuilder,
-  ViewHistory,
-  calcMilestone,
-} from "./model/firestore/video-document";
 import {SecretManager} from "./service/secret-manager";
 import {ViewCountUseCase} from "./service/usecases/view-count-usecase";
 import {VideoInsertUseCase} from "./service/usecases/video-insert-usecase";
@@ -142,7 +134,6 @@ export const fetchViewCountsAndStore = functions.pubsub
   .schedule("0,10,20,30,40,50 * * * *")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
-    // TODO
     await fetchViewCountsAndStoreHistory();
   });
 
@@ -185,91 +176,7 @@ export const checkTheAniversaryDay = functions.pubsub
     // TODO
   });
 
-export const singleInsert = onRequest(async (_, res) => {
-  try {
-    const videoInfo = await listVideoInfo();
-    const vi = videoInfo[0];
-
-    const firestore: Firestore = admin.firestore();
-    const videoService = new VideoService(firestore);
-
-    const builder = new VideoDocumentBuilder();
-    const viewCount = Number(vi.statistics.viewCount);
-    const milestone: number = calcMilestone(viewCount);
-    const videoDoc = builder
-      .videoId(vi.id)
-      .title(vi.snippet.title)
-      .updated(FieldValue.serverTimestamp())
-      .channelId(vi.snippet.channelId)
-      .publishedAt(Timestamp.fromDate(new Date(vi.snippet.publishedAt)))
-      .milestone(milestone)
-      .build();
-
-    const videoHistory = new ViewHistory({
-      viewCount: viewCount,
-    });
-    await videoService.insert(videoDoc, videoHistory);
-
-    res
-      .status(200)
-      .setHeader("Content-Type", "application/json")
-      .send(OkResponse.OK);
-  } catch (err) {
-    logger.error("error", err);
-    res
-      .status(500)
-      .setHeader("Content-Type", "application/json")
-      .send(OkResponse.NG);
-  }
-});
-
-export const singleUpdate = onRequest(async (_, res) => {
-  try {
-    const videoInfos = await listVideoInfo();
-    const vi = videoInfos[0];
-
-    const firestore: Firestore = admin.firestore();
-    const videoService = new VideoService(firestore);
-
-    try {
-      const builder = new VideoDocumentBuilder();
-      const viewCount = Number(vi.statistics.viewCount);
-      const milestone: number = calcMilestone(viewCount);
-      const videoDoc = builder
-        .videoId(vi.id)
-        .title(vi.snippet.title)
-        .updated(FieldValue.serverTimestamp())
-        .channelId(vi.snippet.channelId)
-        .publishedAt(Timestamp.fromDate(new Date(vi.snippet.publishedAt)))
-        .milestone(milestone)
-        .build();
-      const videoHistory = new ViewHistory({
-        viewCount: viewCount,
-      });
-      await videoService.update(videoDoc, videoHistory);
-    } catch (err) {
-      if (err instanceof DocumentNotFoundException) {
-        console.warn(err.message);
-      }
-    }
-
-    res
-      .status(200)
-      .setHeader("Content-Type", "application/json")
-      .send(JSON.stringify(OkResponse.OK));
-  } catch (err) {
-    logger.error("error", err);
-    res.status(500).setHeader("Content-Type", "text/plain").send(OkResponse.NG);
-  }
-});
-
 /* */
-
-async function listVideoInfo(): Promise<Array<VideoInfoItem>> {
-  const youtubeApiService = new YouTubeApiService();
-  const targetVideoId = defineString("TARGET_VIDEO_ID");
-  return await youtubeApiService.listVideoInfoItems(targetVideoId.value());
-}
 
 function createContent(videoInfo: VideoInfoItem | null): string {
   if (!videoInfo) {

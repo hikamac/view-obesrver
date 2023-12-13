@@ -31,56 +31,6 @@ export class ViewHistory extends DocumentModel {
   }
 }
 
-export class VideoDocumentBuilder {
-  private _videoId?: string;
-  private _title?: string;
-  private _updated?: Timestamp | FieldValue;
-  private _channelId?: string;
-  private _publishedAt?: Timestamp;
-  private _milestone?: number;
-
-  public videoId(videoId: string): VideoDocumentBuilder {
-    this._videoId = videoId;
-    return this;
-  }
-
-  public title(title: string): VideoDocumentBuilder {
-    this._title = title;
-    return this;
-  }
-
-  public updated(updated: Timestamp | FieldValue): VideoDocumentBuilder {
-    this._updated = updated;
-    return this;
-  }
-
-  public channelId(channelId: string): VideoDocumentBuilder {
-    this._channelId = channelId;
-    return this;
-  }
-
-  public publishedAt(publishedAt?: Timestamp): VideoDocumentBuilder {
-    this._publishedAt = publishedAt;
-    return this;
-  }
-
-  public milestone(milestone: number): VideoDocumentBuilder {
-    this._milestone = milestone;
-    return this;
-  }
-
-  public build() {
-    return new VideoDocument({
-      videoId: this._videoId,
-      title: this._title,
-      updated: this._updated,
-      channelId: this._channelId,
-      publishedAt: this._publishedAt,
-      milestone: this._milestone,
-    });
-  }
-}
-
 /**
  * Calculate the next milestone based on the number of views.
  *
