@@ -2,6 +2,8 @@ import {
   CollectionReference,
   Firestore,
   Transaction,
+  WriteBatch,
+  WriteResult,
 } from "firebase-admin/firestore";
 import {FirestoreRepository} from "./firestore-repository";
 import {NewsDocument} from "../../../model/firestore/news-document";
@@ -15,7 +17,24 @@ export class NewsRepository extends FirestoreRepository<NewsDocument> {
 
   public async setNewsInTx(tx: Transaction, newsDoc: NewsDocument) {
     const ref = this.newsRef().doc(newsDoc.generateNewsDocumentId());
-    await super.addInTx<NewsDocument>(tx, ref, newsDoc);
+    await super.addInTx<NewsDocument>(tx, ref, newsDoc, {
+      mergeFields: NewsDocument.mergeFields,
+    });
+  }
+
+  public startBatch(): WriteBatch {
+    return super.startBatch();
+  }
+
+  public async addNewsWithBatch(batch: WriteBatch, newsDoc: NewsDocument) {
+    const ref = this.newsRef().doc(newsDoc.generateNewsDocumentId());
+    super.setWithBatch(batch, ref, newsDoc, {
+      mergeFields: NewsDocument.mergeFields,
+    });
+  }
+
+  public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
+    return await super.commitBatch(batch);
   }
 
   /* */

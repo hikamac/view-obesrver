@@ -21,7 +21,7 @@ import {OkResponse} from "./model/ok-response";
 import {SecretManager} from "./service/secret-manager";
 import {ViewCountUseCase} from "./service/usecases/view-count-usecase";
 import {VideoInsertUseCase} from "./service/usecases/video-insert-usecase";
-// import {Firestore} from "firebase-admin/firestore";
+import {AnniversaryUseCase} from "./service/usecases/anniversary-usecase";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -29,50 +29,8 @@ import {VideoInsertUseCase} from "./service/usecases/video-insert-usecase";
 const options: admin.AppOptions = {};
 admin.initializeApp(options);
 
-const envVarsName = defineString("ENV_NAME").value();
-const secretVarsName = defineString("SECRET_NAME").value();
-
-export const testSecret = onRequest(async (_, res) => {
-  try {
-    const secret = await SecretManager.setUpAsync(secretVarsName);
-    const targetVideoIds = secret.get("TARGET_VIDEO_IDS");
-    console.log("target video:" + targetVideoIds);
-    res.send(targetVideoIds);
-  } catch (error) {
-    logger.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// export const addMock = onRequest(async (_, res) => {
-//   try {
-//     const firestore: Firestore = admin.firestore();
-//     const mockDock = {name: "John", calledCount: 0};
-//     const result = await firestore.collection("mock").add(mockDock);
-//     res
-//       .status(200)
-//       .setHeader("Content-Type", "application/json")
-//       .send(JSON.stringify(result));
-//   } catch (err) {
-//     res.status(500).setHeader("Content-Type", "text/plain").send(err);
-//   }
-// });
-
-// export const selectMock = onRequest(async (_, res) => {
-//   try {
-//     const firestore: Firestore = admin.firestore();
-//     const selected = await firestore
-//       .collection("mock")
-//       .where("name", "==", "John")
-//       .get();
-//     res
-//       .status(200)
-//       .setHeader("Content-Type", "application/json")
-//       .send(JSON.stringify(selected.docs.map((doc) => doc.data())));
-//   } catch (err) {
-//     res.status(500).setHeader("Content-Type", "text/plain").send(err);
-//   }
-// });
+export const envVarsName = defineString("ENV_NAME").value();
+export const secretVarsName = defineString("SECRET_NAME").value();
 
 export const testYt = functions.pubsub
   .schedule("0,30 * * * *")
@@ -136,6 +94,9 @@ export const fetchViewCountsAndStore = functions.pubsub
     await fetchViewCountsAndStoreHistory();
   });
 
+/**
+ * @deprecated
+ */
 export const fetchViewCountsAndStoreReq = onRequest(async (_, res) => {
   try {
     await fetchViewCountsAndStoreHistory();
@@ -160,20 +121,45 @@ async function fetchViewCountsAndStoreHistory() {
 }
 
 /**
- * @PUT
  * add the notification in "news" collection
- * if the day is anniversary.
+ * if the day is anniversary or soon.
  * FREQ: every 0 of days(1/d)
  *
  * R: n
  * W: n + a
  */
-export const checkTheAniversaryDay = functions.pubsub
+export const checkTheAnniversaryDay = functions.pubsub
   .schedule("0 0 * * *")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
-    // TODO
+    try {
+      await checkPublishedAndCelebrateAnniv();
+    } catch (error) {
+      logger.error(error);
+    }
   });
+
+/**
+ * @deprecated
+ */
+export const checkTheAnniversaryDayReq = onRequest(async (_, res) => {
+  try {
+    await checkPublishedAndCelebrateAnniv();
+    res.status(200).send(OkResponse.OK);
+  } catch (err) {
+    res.status(500).send(OkResponse.NG);
+  }
+});
+
+async function checkPublishedAndCelebrateAnniv() {
+  const env = await SecretManager.setUpAsync(envVarsName);
+  const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
+  const anniversaryUseCase = new AnniversaryUseCase(youtubeDataApiKey);
+  const secret = await SecretManager.setUpAsync(secretVarsName);
+  const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
+
+  await anniversaryUseCase.checkPublishedAndCelebrateAnniv(targetVideoIds);
+}
 
 /* */
 

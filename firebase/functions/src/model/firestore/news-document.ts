@@ -3,7 +3,6 @@ import {Any, DocumentModel} from "./document-model";
 
 export class NewsDocument extends DocumentModel {
   public updated!: Timestamp | FieldValue;
-  public created!: Timestamp | FieldValue;
   public videoId!: string;
   public videoTitle!: string;
   public category!: NewsCategory;
@@ -15,14 +14,27 @@ export class NewsDocument extends DocumentModel {
     if (!("updated" in init)) {
       this.updated = FieldValue.serverTimestamp();
     }
-    if (!("created" in init)) {
-      this.created = FieldValue.serverTimestamp();
-    }
   }
 
   public generateNewsDocumentId(): string {
     return `${this.category}-${this.videoId}`;
   }
+
+  public getCategory() {
+    return this.newsCategoryNames[this.category.toString()];
+  }
+
+  private readonly newsCategoryNames: {[key: string]: string} = Object.entries(
+    NewsCategory,
+  ).reduce(
+    (pre, [key, value]) => {
+      pre[value.toString()] = key;
+      return pre;
+    },
+    {} as {[key: string]: string},
+  );
+
+  public static mergeFields = ["updated", "properties"];
 }
 
 export const NewsCategory = {

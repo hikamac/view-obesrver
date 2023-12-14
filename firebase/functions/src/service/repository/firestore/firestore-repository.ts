@@ -71,8 +71,11 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     tx: Transaction,
     docRef: DocumentReference<S>,
     data: S,
+    options?: FirebaseFirestore.SetOptions,
   ) {
-    return tx.set(docRef, data);
+    return options === undefined
+      ? tx.set(docRef, data)
+      : tx.set(docRef, data, options);
   }
 
   protected async addSubDocInTx<S extends DocumentModel>(
@@ -107,8 +110,11 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     batch: WriteBatch,
     docRef: DocumentReference<T>,
     data: T,
+    options?: FirebaseFirestore.SetOptions,
   ) {
-    batch.set(docRef, data);
+    options === undefined
+      ? batch.set(docRef, data)
+      : batch.set(docRef, data, options);
   }
 
   protected addSubDocumentWithBatch<S extends DocumentModel>(
