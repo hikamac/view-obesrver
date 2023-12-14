@@ -10,7 +10,6 @@
 // import {onRequest} from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-// import {Firestore} from "firebase-admin/firestore";
 import {YouTubeApiService} from "./youtube";
 import {defineString} from "firebase-functions/params";
 import * as functions from "firebase-functions";
@@ -20,8 +19,10 @@ import {onRequest} from "firebase-functions/v1/https";
 import {OkResponse} from "./model/ok-response";
 import {SecretManager} from "./service/secret-manager";
 import {ViewCountUseCase} from "./service/usecases/view-count-usecase";
-import {VideoInsertUseCase} from "./service/usecases/video-insert-usecase";
-import {AnniversaryUseCase} from "./service/usecases/anniversary-usecase";
+
+export {videoinit} from "./controller/apis/firestore/video-api";
+
+export {checkTheAnniversaryDay} from "./controller/batches/anniversary-batch";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -52,29 +53,6 @@ export const testYt = functions.pubsub
       return null;
     }
   });
-
-/**
- * @POST
- * add video documents in "video" collection
- *
- * R: 0
- * W: n
- */
-export const initializeDocument = onRequest(async (_, res) => {
-  try {
-    const env = await SecretManager.setUpAsync(envVarsName);
-    const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
-    const videoInsertUseCase = new VideoInsertUseCase(youtubeDataApiKey);
-    const secret = await SecretManager.setUpAsync(secretVarsName);
-    const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
-
-    await videoInsertUseCase.insert(targetVideoIds);
-    res.status(200).send(OkResponse.OK);
-  } catch (err) {
-    logger.error(err);
-    res.status(500).send(OkResponse.NG);
-  }
-});
 
 /**
  * @PUT
@@ -118,47 +96,6 @@ async function fetchViewCountsAndStoreHistory() {
   } catch (error) {
     logger.error(error);
   }
-}
-
-/**
- * add the notification in "news" collection
- * if the day is anniversary or soon.
- * FREQ: every 0 of days(1/d)
- *
- * R: n
- * W: n + a
- */
-export const checkTheAnniversaryDay = functions.pubsub
-  .schedule("0 0 * * *")
-  .timeZone("Asia/Tokyo")
-  .onRun(async () => {
-    try {
-      await checkPublishedAndCelebrateAnniv();
-    } catch (error) {
-      logger.error(error);
-    }
-  });
-
-/**
- * @deprecated
- */
-export const checkTheAnniversaryDayReq = onRequest(async (_, res) => {
-  try {
-    await checkPublishedAndCelebrateAnniv();
-    res.status(200).send(OkResponse.OK);
-  } catch (err) {
-    res.status(500).send(OkResponse.NG);
-  }
-});
-
-async function checkPublishedAndCelebrateAnniv() {
-  const env = await SecretManager.setUpAsync(envVarsName);
-  const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
-  const anniversaryUseCase = new AnniversaryUseCase(youtubeDataApiKey);
-  const secret = await SecretManager.setUpAsync(secretVarsName);
-  const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
-
-  await anniversaryUseCase.checkPublishedAndCelebrateAnniv(targetVideoIds);
 }
 
 /* */
