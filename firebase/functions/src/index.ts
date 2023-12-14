@@ -103,7 +103,6 @@ export const testYt = functions.pubsub
  * W: n
  */
 export const initializeDocument = onRequest(async (_, res) => {
-  // TODO
   try {
     const env = await SecretManager.setUpAsync(envVarsName);
     const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");

@@ -24,10 +24,19 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     this.collectionPath = collectionPath;
   }
 
-  protected getCollection(): CollectionReference<T> {
+  protected getCollection<T extends DocumentModel>(): CollectionReference<T> {
     return this.firestore
       .collection(this.collectionPath)
-      .withConverter(this.converter());
+      .withConverter(this.converter<T>());
+  }
+
+  protected getSubCollection<S extends DocumentModel>(
+    docRef: DocumentReference<T>,
+    subCollectionPath: string,
+  ): CollectionReference<S> {
+    return docRef
+      .collection(subCollectionPath)
+      .withConverter(this.converter<S>());
   }
 
   protected async add(data: T) {
@@ -62,6 +71,14 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     tx: Transaction,
     docRef: DocumentReference<T>,
     data: T,
+  ) {
+    return tx.set(docRef, data);
+  }
+
+  protected async addInTx2<S extends DocumentModel>(
+    tx: Transaction,
+    docRef: DocumentReference<S>,
+    data: S,
   ) {
     return tx.set(docRef, data);
   }
@@ -128,7 +145,16 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     return batch.commit();
   }
 
-  protected abstract converter(): FirestoreDataConverter<T>;
+  protected converter<T extends DocumentModel>(): FirestoreDataConverter<T> {
+    return {
+      toFirestore(model: T) {
+        return model.parseObj();
+      },
+      fromFirestore(snapshot: QueryDocumentSnapshot) {
+        return snapshot.data() as T;
+      },
+    };
+  }
 
   protected exists(ss: QuerySnapshot<DocumentData>): boolean;
   protected exists(ss: QueryDocumentSnapshot<DocumentData>): boolean;

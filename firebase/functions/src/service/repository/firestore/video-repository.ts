@@ -1,7 +1,6 @@
 import {
+  CollectionReference,
   Firestore,
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
   Transaction,
 } from "firebase-admin/firestore";
 import {FirestoreRepository} from "./firestore-repository";
@@ -18,17 +17,6 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     super(firestore, COLLECTION_NAME);
   }
 
-  protected converter(): FirestoreDataConverter<VideoDocument> {
-    return {
-      toFirestore(model: VideoDocument) {
-        return model.parseObj();
-      },
-      fromFirestore(snapshot: QueryDocumentSnapshot) {
-        return snapshot.data() as VideoDocument;
-      },
-    };
-  }
-
   public async addVideos(videoDocuments: VideoDocument[]) {
     const batch = super.startBatch();
     for (const vd of videoDocuments) {
@@ -41,7 +29,7 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     tx: Transaction,
     videoIds: string[],
   ): Promise<Record<string, VideoDocument>> {
-    const query = super.getCollection().where("videoId", "in", videoIds);
+    const query = this.videoRef().where("videoId", "in", videoIds);
     const snapshot = await super.getInTx(tx, query);
     if (!super.exists(snapshot)) {
       return {};
@@ -62,16 +50,27 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     docId: string,
     videoDocument: VideoDocument,
   ) {
-    const ref = super.getCollection().doc(docId);
+    const ref = this.videoRef().doc(docId);
     await super.updateInTx(tx, ref, videoDocument);
   }
 
   public async addViewHistoryInTx(
     tx: Transaction,
-    docId: string,
+    videoDocId: string,
     viewHistory: ViewHistory,
   ) {
-    const ref = super.getCollection().doc(docId);
-    return super.addSubDocInTx(tx, ref, SUB_COLLECTION_NAME, viewHistory);
+    const ref = this.viewHistoryRef(videoDocId).doc();
+    return super.addInTx2<ViewHistory>(tx, ref, viewHistory);
+  }
+
+  /* */
+
+  private videoRef(): CollectionReference<VideoDocument> {
+    return super.getCollection<VideoDocument>();
+  }
+
+  private viewHistoryRef(videoDocId: string): CollectionReference<ViewHistory> {
+    const vhRef = this.videoRef().doc(videoDocId);
+    return super.getSubCollection<ViewHistory>(vhRef, SUB_COLLECTION_NAME);
   }
 }

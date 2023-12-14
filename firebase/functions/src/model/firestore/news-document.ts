@@ -19,6 +19,10 @@ export class NewsDocument extends DocumentModel {
       this.created = FieldValue.serverTimestamp();
     }
   }
+
+  public generateNewsDocumentId(): string {
+    return `${this.category}-${this.videoId}`;
+  }
 }
 
 export const NewsCategory = {

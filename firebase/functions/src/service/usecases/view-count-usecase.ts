@@ -116,8 +116,7 @@ export class ViewCountUseCase {
         milestone: oldMilestone,
       },
     });
-    const docId = this.generateNewsDocumentId(category, videoId);
-    await this.newsRepo.setNewsInTx(tx, docId, newsDoc);
+    await this.newsRepo.setNewsInTx(tx, newsDoc);
   }
 
   private async notifyApproacingMilestone(
@@ -137,14 +136,6 @@ export class ViewCountUseCase {
         milestone: currentMilestone,
       },
     });
-    const docId = this.generateNewsDocumentId(category, videoId);
-    await this.newsRepo.setNewsInTx(tx, docId, newsDoc);
-  }
-
-  private generateNewsDocumentId(
-    category: NewsCategory,
-    videoId: string,
-  ): string {
-    return `${category}-${videoId}`;
+    await this.newsRepo.setNewsInTx(tx, newsDoc);
   }
 }

@@ -60,7 +60,6 @@ export class VideoInsertUseCase {
         channelId: videoInfoItem.snippet.channelId,
         publishedAt: publishedAt,
         milestone: milestone,
-        isApprNewsed: false,
       });
       return vd;
     } catch (err) {
