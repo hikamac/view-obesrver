@@ -67,15 +67,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     }
   }
 
-  protected async addInTx(
-    tx: Transaction,
-    docRef: DocumentReference<T>,
-    data: T,
-  ) {
-    return tx.set(docRef, data);
-  }
-
-  protected async addInTx2<S extends DocumentModel>(
+  protected async addInTx<S extends DocumentModel>(
     tx: Transaction,
     docRef: DocumentReference<S>,
     data: S,

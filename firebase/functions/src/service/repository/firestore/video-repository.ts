@@ -60,7 +60,7 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     viewHistory: ViewHistory,
   ) {
     const ref = this.viewHistoryRef(videoDocId).doc();
-    return super.addInTx2<ViewHistory>(tx, ref, viewHistory);
+    return super.addInTx<ViewHistory>(tx, ref, viewHistory);
   }
 
   /* */
