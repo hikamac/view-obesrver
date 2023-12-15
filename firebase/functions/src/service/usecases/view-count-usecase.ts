@@ -32,7 +32,7 @@ export class ViewCountUseCase {
     await this.updateVideoAndCreateNewsIfNeeded(videoIdAndViewCounts);
   }
 
-  private async fetchViewCountsFromYouTube(
+  public async fetchViewCountsFromYouTube(
     targetVideoIds: string[],
   ): Promise<Record<string, number>> {
     const videoInfos = await this.youtubeRepo.listVideoInfo(targetVideoIds, [

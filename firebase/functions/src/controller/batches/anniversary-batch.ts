@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
+import {defineString} from "firebase-functions/params";
 import {SecretManager} from "../../service/secret-manager";
 import {AnniversaryUseCase} from "../../service/usecases/anniversary-usecase";
-import {envVarsName, secretVarsName} from "../..";
 
 /**
  * add the notification in "news" collection
@@ -15,6 +15,8 @@ export const checkTheAnniversaryDay = functions.pubsub
   .schedule("0 0 * * *")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
+    const envVarsName = defineString("ENV_NAME").value();
+    const secretVarsName = defineString("SECRET_NAME").value();
     const env = await SecretManager.setUpAsync(envVarsName);
     const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
     const anniversaryUseCase = new AnniversaryUseCase(youtubeDataApiKey);

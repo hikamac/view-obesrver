@@ -17,6 +17,22 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     super(firestore, COLLECTION_NAME);
   }
 
+  public async getVideos(): Promise<Record<string, VideoDocument>> {
+    const snapshot = await super.getCollection<VideoDocument>().get();
+    if (!super.exists(snapshot)) {
+      return {};
+    }
+    const documentIdAndData: Record<string, VideoDocument> =
+      snapshot.docs.reduce(
+        (acc, doc) => {
+          acc[doc.id] = doc.data();
+          return acc;
+        },
+        {} as Record<string, VideoDocument>,
+      );
+    return documentIdAndData;
+  }
+
   public async addVideos(videoDocuments: VideoDocument[]) {
     const batch = super.startBatch();
     for (const vd of videoDocuments) {

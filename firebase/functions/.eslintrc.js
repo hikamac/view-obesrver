@@ -20,6 +20,7 @@ module.exports = {
   },
   ignorePatterns: [
     "/lib/**/*", // Ignore built files.
+    "generate-index.js",
   ],
   plugins: [
     "@typescript-eslint",
