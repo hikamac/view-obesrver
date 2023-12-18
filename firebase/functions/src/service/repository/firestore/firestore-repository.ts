@@ -172,4 +172,18 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
       throw new Error("unexpected type");
     }
   }
+
+  protected idAndData<T>(ss: QuerySnapshot<DocumentData>) {
+    if (this.exists(ss)) {
+      return {};
+    }
+    const documentIdAndData: Record<string, T> = ss.docs.reduce(
+      (acc, doc) => {
+        acc[doc.id] = doc.data() as T;
+        return acc;
+      },
+      {} as Record<string, T>,
+    );
+    return documentIdAndData;
+  }
 }

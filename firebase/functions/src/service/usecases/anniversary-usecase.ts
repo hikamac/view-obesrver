@@ -67,6 +67,6 @@ export class AnniversaryUseCase {
 
   private calculateRestDaysForAnniversary(pubAt: string) {
     const dateOfPubAt = new Date(pubAt);
-    return DateTools.calculateRestDaysFor(dateOfPubAt);
+    return calculateRestDaysFor(dateOfPubAt);
   }
 }

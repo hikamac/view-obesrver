@@ -17,6 +17,8 @@ admin.initializeApp(options);
 // The content below will be overwritten!
 // //////////////////////////////////////
 
+export * from "./controller/apis/firestore/debug-api";
+export * from "./controller/apis/firestore/news-api";
 export * from "./controller/apis/firestore/video-api";
 export * from "./controller/batches/anniversary-batch";
 export * from "./controller/batches/view-count-batch";

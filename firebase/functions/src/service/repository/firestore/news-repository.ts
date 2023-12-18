@@ -6,13 +6,37 @@ import {
   WriteResult,
 } from "firebase-admin/firestore";
 import {FirestoreRepository} from "./firestore-repository";
-import {NewsDocument} from "../../../model/firestore/news-document";
+import {
+  NewsCategory,
+  NewsDocument,
+} from "../../../model/firestore/news-document";
 
 const COLLECTION_NAME = "news";
 
 export class NewsRepository extends FirestoreRepository<NewsDocument> {
   constructor(firestore: Firestore) {
     super(firestore, COLLECTION_NAME);
+  }
+
+  public async getNewsWithCursor(
+    limit: number,
+    startAfterId?: string,
+    category?: NewsCategory,
+  ): Promise<NewsDocument[]> {
+    let query = this.newsRef().orderBy("updated", "desc").limit(limit);
+    if (startAfterId) {
+      const lastVisibleQuery = this.newsRef().doc(startAfterId);
+      const startAfterSnapshot = await lastVisibleQuery.get();
+      query = query.startAfter(startAfterSnapshot);
+    }
+    if (category) {
+      query = query.where("category", "==", category);
+    }
+    const snapshot = await query.get();
+    if (super.exists(snapshot)) {
+      return snapshot.docs.map((doc) => doc.data() as NewsDocument);
+    }
+    return [];
   }
 
   public async setNewsInTx(tx: Transaction, newsDoc: NewsDocument) {
