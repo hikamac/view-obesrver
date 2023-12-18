@@ -106,7 +106,7 @@ export class ViewCountUseCase {
     viewCount: number,
     oldMilestone: number,
   ): Promise<void> {
-    const category = NewsCategory.VIEW_COUNT_REACHED;
+    const category: NewsCategory = "VIEW_COUNT_REACHED";
     const newsDoc = new NewsDocument({
       videoId: videoId,
       videoTitle: videoTitle,
@@ -126,7 +126,7 @@ export class ViewCountUseCase {
     viewCount: number,
     currentMilestone: number,
   ): Promise<void> {
-    const category = NewsCategory.VIEW_COUNT_APPROACH;
+    const category: NewsCategory = "VIEW_COUNT_APPROACH";
     const newsDoc = new NewsDocument({
       videoId: videoId,
       videoTitle: videoTitle,

@@ -5,8 +5,8 @@ import {NewsRepository} from "../repository/firestore/news-repository";
 import {
   YouTubeDataApiRepository} from "../repository/youtube/youtube-repository";
 import {VideoInfoItem} from "../../model/youtube/video-info-item";
-import {DateTools} from "../../utils/date-tools";
-import {NewsCategory, NewsDocument} from "../../model/firestore/news-document";
+import {calculateRestDaysFor} from "../../utils/date-tool";
+import {NewsDocument} from "../../model/firestore/news-document";
 
 export class AnniversaryUseCase {
   private youtubeRepo: YouTubeDataApiRepository;
@@ -35,7 +35,7 @@ export class AnniversaryUseCase {
         const newsDoc = new NewsDocument({
           videoId: video.id,
           videoTitle: video.snippet.title,
-          category: NewsCategory.ANNIVERSARY,
+          category: "ANNIVERSARY",
           properties: {
             publishedAt: video.snippet.publishedAt,
             restDays: this.calculateRestDaysForAnniversary(

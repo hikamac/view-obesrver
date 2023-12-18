@@ -20,26 +20,10 @@ export class NewsDocument extends DocumentModel {
     return `${this.category}-${this.videoId}`;
   }
 
-  public getCategory() {
-    return this.newsCategoryNames[this.category.toString()];
-  }
-
-  private readonly newsCategoryNames: {[key: string]: string} = Object.entries(
-    NewsCategory,
-  ).reduce(
-    (pre, [key, value]) => {
-      pre[value.toString()] = key;
-      return pre;
-    },
-    {} as {[key: string]: string},
-  );
-
   public static mergeFields = ["updated", "properties"];
 }
 
-export const NewsCategory = {
-  VIEW_COUNT_APPROACH: 0,
-  VIEW_COUNT_REACHED: 1,
-  ANNIVERSARY: 2,
-} as const;
-export type NewsCategory = (typeof NewsCategory)[keyof typeof NewsCategory];
+export type NewsCategory =
+  | "VIEW_COUNT_APPROACH"
+  | "VIEW_COUNT_REACHED"
+  | "ANNIVERSARY";
