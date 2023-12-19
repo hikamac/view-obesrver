@@ -1,17 +1,17 @@
-import axios from "axios";
+// import axios from "axios";
+// import {VideoInfoItem} from "../../model/youtube/video-info-item";
+// prettier-ignore
+// import {
+//   YouTubeDataApiRepository,
+// } from "../../service/repository/youtube/youtube-repository";
 
 import * as functions from "firebase-functions";
 import {defineString} from "firebase-functions/params";
 import {SecretManager} from "../../service/secret-manager";
-import {VideoInfoItem} from "../../model/youtube/video-info-item";
-// prettier-ignore
-import {
-  YouTubeDataApiRepository,
-} from "../../service/repository/youtube/youtube-repository";
 import {ViewCountUseCase} from "../../service/usecases/view-count-usecase";
+import {firestoreRegion} from "../../constant/setting-value";
 
 /**
- * @PUT
  * record view count of documents in "video" collection.
  * if the view count is about to reach the milestone,
  * then also add the notification in "news" collection.
@@ -21,8 +21,9 @@ import {ViewCountUseCase} from "../../service/usecases/view-count-usecase";
  * R: n
  * W: n + a
  */
-export const fetchViewCountsAndStore = functions.pubsub
-  .schedule("0,10,20,30,40,50 * * * *")
+export const fetchViewCountsAndStore = functions
+  .region(firestoreRegion)
+  .pubsub.schedule("0,10,20,30,40,50 * * * *")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
     const envVarsName = defineString("ENV_NAME").value();
@@ -40,43 +41,43 @@ export const fetchViewCountsAndStore = functions.pubsub
     }
   });
 
-export const testYt = functions.pubsub
-  .schedule("0,30 * * * *")
-  .timeZone("Asia/Tokyo")
-  .onRun(async () => {
-    try {
-      const envVarsName = defineString("ENV_NAME").value();
-      const secretVarsName = defineString("SECRET_NAME").value();
-      const env = await SecretManager.setUpAsync(envVarsName);
-      const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
-      const secret = await SecretManager.setUpAsync(secretVarsName);
-      const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
+// export const testYt = functions.pubsub
+//   .schedule("0,30 * * * *")
+//   .timeZone("Asia/Tokyo")
+//   .onRun(async () => {
+//     try {
+//       const envVarsName = defineString("ENV_NAME").value();
+//       const secretVarsName = defineString("SECRET_NAME").value();
+//       const env = await SecretManager.setUpAsync(envVarsName);
+//       const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
+//       const secret = await SecretManager.setUpAsync(secretVarsName);
+//       const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
 
-      const youtube = new YouTubeDataApiRepository(youtubeDataApiKey);
-      const videoInfoItem = await youtube.listVideoInfo(targetVideoIds, [
-        "snippet",
-        "statistics",
-      ]);
+//       const youtube = new YouTubeDataApiRepository(youtubeDataApiKey);
+//       const videoInfoItem = await youtube.listVideoInfo(targetVideoIds, [
+//         "snippet",
+//         "statistics",
+//       ]);
 
-      let content = "";
+//       let content = "";
 
-      const webhook = defineString("DISCORD_WEBHOOK_URL");
-      for (const video of videoInfoItem) {
-        content += createContent(video) + "\n";
-      }
+//       const webhook = defineString("DISCORD_WEBHOOK_URL");
+//       for (const video of videoInfoItem) {
+//         content += createContent(video) + "\n";
+//       }
 
-      await axios.post(webhook.value(), {content: content});
-    } catch (err) {
-      functions.logger.error("error", err);
-    }
-  });
+//       await axios.post(webhook.value(), {content: content});
+//     } catch (err) {
+//       functions.logger.error("error", err);
+//     }
+//   });
 
-function createContent(videoInfo: VideoInfoItem | null): string {
-  if (!videoInfo) {
-    return "動画情報の取得に失敗しました。";
-  }
-  const snippet = videoInfo.snippet;
-  const statistics = videoInfo.statistics;
+// function createContent(videoInfo: VideoInfoItem | null): string {
+//   if (!videoInfo) {
+//     return "動画情報の取得に失敗しました。";
+//   }
+//   const snippet = videoInfo.snippet;
+//   const statistics = videoInfo.statistics;
 
-  return `${snippet.title}の再生回数が${statistics.viewCount}に到達しました！`;
-}
+//   return `${snippet.title}の再生回数が${statistics.viewCount}に到達しました！`;
+// }

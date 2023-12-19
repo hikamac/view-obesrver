@@ -2,6 +2,7 @@ import * as functions from "firebase-functions";
 import {defineString} from "firebase-functions/params";
 import {SecretManager} from "../../service/secret-manager";
 import {AnniversaryUseCase} from "../../service/usecases/anniversary-usecase";
+import {firestoreRegion} from "../../constant/setting-value";
 
 /**
  * add the notification in "news" collection
@@ -11,8 +12,9 @@ import {AnniversaryUseCase} from "../../service/usecases/anniversary-usecase";
  * R: n
  * W: n + a
  */
-export const checkTheAnniversaryDay = functions.pubsub
-  .schedule("0 0 * * *")
+export const checkTheAnniversaryDay = functions
+  .region(firestoreRegion)
+  .pubsub.schedule("0 0 * * *")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
     const envVarsName = defineString("ENV_NAME").value();

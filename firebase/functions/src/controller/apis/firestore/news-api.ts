@@ -2,6 +2,7 @@ import * as logger from "firebase-functions/logger";
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {NewsQueryUseCase} from "../../../service/usecases/news-query-usecase";
 import {atLeast, atMost} from "../../../utils/validation-tool";
+import {firestoreRegion} from "../../../constant/setting-value";
 
 /**
  * add video documents in "video" collection if absent
@@ -14,7 +15,7 @@ import {atLeast, atMost} from "../../../utils/validation-tool";
  * @param {string} category - news category filter.
  *
  */
-export const news = onCall(async (req) => {
+export const news = onCall({region: firestoreRegion}, async (req) => {
   const param = req.data as NewsQueryRequest;
   try {
     atLeast(param.limit, 1);

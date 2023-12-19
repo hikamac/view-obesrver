@@ -14,14 +14,14 @@ function getTsFiles(dir, rootDir = '') {
   let files = [];
 
   fs.readdirSync(dir).forEach(file => {
-    const filePath = path.join(dir, file);
+    const filePath = path.posix.join(dir, file);
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
-      files = files.concat(getTsFiles(filePath, path.join(rootDir, file)));
+      files = files.concat(getTsFiles(filePath, path.posix.join(rootDir, file)));
     } else if (file.endsWith('.ts') && file !== 'index.ts') {
       if (hasExportStatements(filePath)) {
-        files.push(path.join(rootDir, file).replace(/\.ts$/, ''));
+        files.push(path.posix.join(rootDir, file).replace(/\.ts$/, ''));
       }
     }
   });
