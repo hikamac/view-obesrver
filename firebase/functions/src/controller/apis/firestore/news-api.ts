@@ -3,11 +3,29 @@ import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {NewsQueryUseCase} from "../../../service/usecases/news-query-usecase";
 import {atLeast, atMost} from "../../../utils/validation-tool";
 
+/**
+ * add video documents in "video" collection if absent
+ *
+ * R: limit + 0~1
+ * W: 0
+ *
+ * @param {number} limit - max news count.
+ * @param {string} lastNewsId - the last document Id in the previous res.
+ * @param {string} category - news category filter.
+ *
+ */
 export const news = onCall(async (req) => {
+  const param = req.data as NewsQueryRequest;
   try {
-    const param = req.data as NewsQueryRequest;
-    atLeast(param.limit, 0);
+    atLeast(param.limit, 1);
     atMost(param.limit, 20);
+  } catch (e) {
+    if (e instanceof RangeError) {
+      throw new HttpsError("out-of-range", e.message);
+    }
+  }
+
+  try {
     const newsQuery = new NewsQueryUseCase();
     const news = await newsQuery.query(
       param.limit,
@@ -20,7 +38,7 @@ export const news = onCall(async (req) => {
       lastNewsId: lastNewsId,
     };
   } catch (err) {
-    logger.error(err);
+    logger.error("news: ", err);
     throw new HttpsError("internal", "", "");
   }
 });
