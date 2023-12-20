@@ -1,10 +1,3 @@
-// import axios from "axios";
-// import {VideoInfoItem} from "../../model/youtube/video-info-item";
-// prettier-ignore
-// import {
-//   YouTubeDataApiRepository,
-// } from "../../service/repository/youtube/youtube-repository";
-
 import * as functions from "firebase-functions";
 import {defineString} from "firebase-functions/params";
 import {SecretManager} from "../../service/secret-manager";
@@ -40,44 +33,3 @@ export const fetchViewCountsAndStore = functions
       functions.logger.error(error);
     }
   });
-
-// export const testYt = functions.pubsub
-//   .schedule("0,30 * * * *")
-//   .timeZone("Asia/Tokyo")
-//   .onRun(async () => {
-//     try {
-//       const envVarsName = defineString("ENV_NAME").value();
-//       const secretVarsName = defineString("SECRET_NAME").value();
-//       const env = await SecretManager.setUpAsync(envVarsName);
-//       const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
-//       const secret = await SecretManager.setUpAsync(secretVarsName);
-//       const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
-
-//       const youtube = new YouTubeDataApiRepository(youtubeDataApiKey);
-//       const videoInfoItem = await youtube.listVideoInfo(targetVideoIds, [
-//         "snippet",
-//         "statistics",
-//       ]);
-
-//       let content = "";
-
-//       const webhook = defineString("DISCORD_WEBHOOK_URL");
-//       for (const video of videoInfoItem) {
-//         content += createContent(video) + "\n";
-//       }
-
-//       await axios.post(webhook.value(), {content: content});
-//     } catch (err) {
-//       functions.logger.error("error", err);
-//     }
-//   });
-
-// function createContent(videoInfo: VideoInfoItem | null): string {
-//   if (!videoInfo) {
-//     return "動画情報の取得に失敗しました。";
-//   }
-//   const snippet = videoInfo.snippet;
-//   const statistics = videoInfo.statistics;
-
-//   return `${snippet.title}の再生回数が${statistics.viewCount}に到達しました！`;
-// }

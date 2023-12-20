@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "cd functions && npm run lint --fix",
     "build": "cd functions && npm run build",
+    "build:debug": "cd functions && npm run build:debug",
     "build:watch": "cd functions && npm run build:watch",
     "start": "firebase emulators:start"
   }
