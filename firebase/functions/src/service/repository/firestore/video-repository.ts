@@ -2,6 +2,8 @@ import {
   CollectionReference,
   Firestore,
   Transaction,
+  WriteBatch,
+  WriteResult,
 } from "firebase-admin/firestore";
 import {FirestoreRepository} from "./firestore-repository";
 import {
@@ -77,6 +79,36 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
   ) {
     const ref = this.viewHistoryRef(videoDocId).doc();
     return super.addInTx<ViewHistory>(tx, ref, viewHistory);
+  }
+
+  /* batch */
+
+  public startBatch(): WriteBatch {
+    return super.startBatch();
+  }
+
+  public addVideoWithBatch(batch: WriteBatch, videoDoc: VideoDocument): string {
+    const ref = this.videoRef().doc();
+    super.setWithBatch(batch, ref, videoDoc);
+    return ref.id;
+  }
+
+  public addViewHistoryWithBatch(
+    batch: WriteBatch,
+    videoDocId: string,
+    viewHistory: ViewHistory,
+  ) {
+    const ref = this.videoRef();
+    super.addSubDocumentWithBatch<ViewHistory>(
+      batch,
+      ref.doc(videoDocId),
+      SUB_COLLECTION_NAME,
+      viewHistory,
+    );
+  }
+
+  public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
+    return await super.commitBatch(batch);
   }
 
   /* */

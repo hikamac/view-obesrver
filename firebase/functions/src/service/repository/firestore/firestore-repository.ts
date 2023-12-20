@@ -123,7 +123,7 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     subCollectionName: string,
     data: S,
   ) {
-    const subDocRef = docRef.collection(subCollectionName).doc();
+    const subDocRef = this.getSubCollection<S>(docRef, subCollectionName).doc();
     batch.set(subDocRef, data);
   }
 

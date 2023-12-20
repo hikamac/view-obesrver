@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import {NewsRepository} from "../repository/firestore/news-repository";
 import {VideoRepository} from "../repository/firestore/video-repository";
-import {Transaction} from "firebase-admin/firestore";
+import {FieldValue, Timestamp, Transaction} from "firebase-admin/firestore";
 import {
   VideoDocument,
   ViewHistory,
@@ -13,6 +13,8 @@ import {NewsDocument, NewsCategory} from "../../model/firestore/news-document";
 import {
   YouTubeDataApiRepository,
 } from "../repository/youtube/youtube-repository";
+import {VideoInfoItem} from "../../model/youtube/video-info-item";
+import {logger} from "firebase-functions/v1";
 
 export class ViewCountUseCase {
   private youtubeRepo: YouTubeDataApiRepository;
@@ -27,36 +29,66 @@ export class ViewCountUseCase {
   }
 
   public async fetchAndStore(targetVideoIds: string[]) {
-    const videoIdAndViewCounts =
-      await this.fetchViewCountsFromYouTube(targetVideoIds);
-    await this.updateVideoAndCreateNewsIfNeeded(videoIdAndViewCounts);
-  }
-
-  public async fetchViewCountsFromYouTube(
-    targetVideoIds: string[],
-  ): Promise<Record<string, number>> {
-    const videoInfos = await this.youtubeRepo.listVideoInfo(targetVideoIds, [
-      "statistics",
-    ]);
-    return videoInfos.reduce(
-      (pre, cur) => {
-        pre[cur.id] = Number(cur.statistics.viewCount);
+    const videoIdAndInfoItems = await this.fetchFromYouTube(targetVideoIds);
+    const videoIdAndViewCounts = Object.keys(videoIdAndInfoItems).reduce(
+      (pre, id) => {
+        pre[id] = Number(videoIdAndInfoItems[id].statistics.viewCount);
         return pre;
       },
       {} as Record<string, number>,
+    );
+    const results =
+      await this.updateVideoAndCreateNewsIfNeeded(videoIdAndViewCounts);
+    const documented = new Set(Object.keys(results));
+    const notDocumented = Object.keys(videoIdAndInfoItems)
+      .filter((id) => !documented.has(id))
+      .reduce(
+        (pre, id) => {
+          pre[id] = videoIdAndInfoItems[id];
+          return pre;
+        },
+        {} as Record<string, VideoInfoItem>,
+      );
+    await this.insertVideo(notDocumented);
+  }
+
+  private async fetchFromYouTube(
+    targetVideoIds: string[],
+  ): Promise<Record<string, VideoInfoItem>> {
+    const videoInfos = await this.youtubeRepo.listVideoInfo(targetVideoIds, [
+      "snippet",
+      "statistics",
+    ]);
+    return videoInfos.reduce(
+      (pre, videoInfo) => {
+        pre[videoInfo.id] = videoInfo;
+        return pre;
+      },
+      {} as Record<string, VideoInfoItem>,
     );
   }
 
   private async updateVideoAndCreateNewsIfNeeded(
     videoIdAndViewCounts: Record<string, number>,
-  ): Promise<void> {
-    this.firestore.runTransaction(async (tx: Transaction) => {
+  ): Promise<Record<string, NewsCategory | null>> {
+    return await this.firestore.runTransaction(async (tx: Transaction) => {
       const documentIdAndDocument: Record<string, VideoDocument> =
         await this.videoRepo.getByVideoIdsInTx(
           tx,
           Object.keys(videoIdAndViewCounts),
         );
 
+      const results: Record<string, NewsCategory | null> = Object.values(
+        documentIdAndDocument,
+      )
+        .map((video) => video.videoId)
+        .reduce(
+          (pre, videoId) => {
+            pre[videoId] = null;
+            return pre;
+          },
+          {} as Record<string, NewsCategory | null>,
+        );
       for (const [docId, doc] of Object.entries(documentIdAndDocument)) {
         // update video document and create news
         const viewCount = videoIdAndViewCounts[doc.videoId];
@@ -69,6 +101,7 @@ export class ViewCountUseCase {
             doc.milestone,
           );
           await this.setNewMilestone(tx, docId, doc, viewCount);
+          results[doc.videoId] = "VIEW_COUNT_REACHED";
         } else if (isCloseToNextMilestone(viewCount)) {
           await this.notifyApproacingMilestone(
             tx,
@@ -77,12 +110,38 @@ export class ViewCountUseCase {
             viewCount,
             doc.milestone,
           );
+          results[doc.videoId] = "VIEW_COUNT_APPROACH";
         }
         // add sub documents under each video document
         const viewHistory = new ViewHistory({viewCount: viewCount});
         await this.videoRepo.addViewHistoryInTx(tx, docId, viewHistory);
       }
+      return results;
     });
+  }
+
+  private async insertVideo(
+    videoIdAndInfoItems: Record<string, VideoInfoItem>,
+  ): Promise<void> {
+    const videoBatch = this.videoRepo.startBatch();
+    const videoIdAndDocId: Record<string, string> = {};
+    for (const [videoId, infoItem] of Object.entries(videoIdAndInfoItems)) {
+      const videoDoc = this.convert(infoItem);
+      if (!videoDoc) continue;
+      const docId = this.videoRepo.addVideoWithBatch(videoBatch, videoDoc);
+      videoIdAndDocId[videoId] = docId;
+    }
+    await this.videoRepo.commitBatch(videoBatch);
+
+    const viewBatch = this.videoRepo.startBatch();
+    for (const [videoId, docId] of Object.entries(videoIdAndDocId)) {
+      const infoItem = videoIdAndInfoItems[videoId];
+      const viewHistory = new ViewHistory({
+        viewCount: Number(infoItem.statistics.viewCount),
+      });
+      this.videoRepo.addViewHistoryWithBatch(viewBatch, docId, viewHistory);
+    }
+    await this.videoRepo.commitBatch(viewBatch);
   }
 
   private async setNewMilestone(
@@ -137,5 +196,28 @@ export class ViewCountUseCase {
       },
     });
     await this.newsRepo.setNewsInTx(tx, newsDoc);
+  }
+
+  private convert(videoInfoItem: VideoInfoItem): VideoDocument | null {
+    try {
+      const now = FieldValue.serverTimestamp();
+      const publishedAtDate = new Date(videoInfoItem.snippet.publishedAt);
+      const publishedAt = Timestamp.fromDate(publishedAtDate);
+      const milestone = calcMilestone(
+        Number(videoInfoItem.statistics.viewCount),
+      );
+      const vd = new VideoDocument({
+        videoId: videoInfoItem.id,
+        title: videoInfoItem.snippet.title,
+        updated: now,
+        channelId: videoInfoItem.snippet.channelId,
+        publishedAt: publishedAt,
+        milestone: milestone,
+      });
+      return vd;
+    } catch (err) {
+      logger.error(err);
+      return null;
+    }
   }
 }
