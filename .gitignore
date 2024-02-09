@@ -45,3 +45,7 @@ app.*.map.json
 
 # firebase cache
 .firebase/
+
+# environment variables
+.env
+**/env/env.g.dart
