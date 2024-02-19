@@ -33,14 +33,16 @@ export const news = onCall({region: firestoreRegion}, async (req) => {
       param.lastNewsId,
       param.category,
     );
-    const lastNewsId = news[news.length - 1].generateNewsDocumentId();
+    const lastNews = news[news.length - 1];
+    const lastNewsId =
+      lastNews != null ? lastNews.generateNewsDocumentId() : null;
     return {
       news: news,
       lastNewsId: lastNewsId,
     };
   } catch (err) {
     logger.error("news: ", err);
-    throw new HttpsError("internal", "", "");
+    throw new HttpsError("internal", "", `${err}`);
   }
 });
 
