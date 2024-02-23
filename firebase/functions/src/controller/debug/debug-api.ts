@@ -7,6 +7,8 @@ import {
   AnniversaryUseCase} from "../../service/usecases/anniversary-usecase";
 import {OkResponse} from "../../model/ok-response";
 import {ViewCountUseCase} from "../../service/usecases/view-count-usecase";
+import {firestoreRegion} from "../../constant/setting-value";
+import {NewsQueryUseCase} from "../../service/usecases/news-query-usecase";
 
 export const aniv = onRequest(async (_, res) => {
   const envVarsName = defineString("ENV_NAME").value();
@@ -25,7 +27,7 @@ export const aniv = onRequest(async (_, res) => {
   }
 });
 
-export const SZwdsqnohQ = onRequest(async (_, res) => {
+export const fetchAndStoreD = onRequest(async (_, res) => {
   const envVarsName = defineString("ENV_NAME").value();
   const secretVarsName = defineString("SECRET_NAME").value();
   try {
@@ -40,5 +42,22 @@ export const SZwdsqnohQ = onRequest(async (_, res) => {
   } catch (error) {
     logger.error(error);
     res.status(500).send(OkResponse.NG);
+  }
+});
+
+export const newsD = onRequest({region: firestoreRegion}, async (_, res) => {
+  try {
+    const newsQuery = new NewsQueryUseCase();
+    const news = await newsQuery.query(20);
+    const lastNews = news[news.length - 1];
+    const lastNewsId =
+      lastNews != null ? lastNews.generateNewsDocumentId() : null;
+    res.status(200).send({
+      news: news,
+      lastNewsId: lastNewsId,
+    });
+  } catch (err) {
+    logger.error("news: ", err);
+    res.status(500).send("internal");
   }
 });

@@ -16,11 +16,35 @@ export class NewsDocument extends DocumentModel {
     }
   }
 
+  public static reconstruct(
+    updated: Timestamp | FieldValue,
+    videoId: string,
+    videoTitle: string,
+    category: NewsCategory,
+    properties: {[key: string]: Any},
+    url?: string,
+  ): NewsDocument {
+    return new NewsDocument({
+      updated: updated,
+      videoId: videoId,
+      videoTitle: videoTitle,
+      category: category,
+      properties: properties,
+      url: url,
+    });
+  }
+
   public generateNewsDocumentId(): string {
     return `${this.category}-${this.videoId}`;
   }
 
-  public static mergeFields = ["updated", "properties"];
+  public static extractCategory(documentId: string): NewsCategory {
+    return documentId.substring(0, documentId.indexOf("-")) as NewsCategory;
+  }
+
+  public static extractVideoId(documentId: string): string {
+    return documentId.substring(documentId.indexOf("-") + 1);
+  }
 }
 
 export type NewsCategory =
