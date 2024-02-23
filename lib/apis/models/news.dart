@@ -12,7 +12,8 @@ class NewsListQueryResponse {
     required this.lastViewedId,
   });
 
-  factory NewsListQueryResponse.fromJson(Map<String, dynamic> json) => _$NewsListQueryResponseFromJson(json);
+  factory NewsListQueryResponse.fromJson(Map<String, dynamic> json) =>
+      _$NewsListQueryResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$NewsListQueryResponseToJson(this);
 }
@@ -23,7 +24,8 @@ class NewsDocument {
   final DateTime updated;
   final String videoId;
   final String videoTitle;
-  final String category;
+  @JsonKey(fromJson: _newsCategoryFromString)
+  final NewsCategory category;
   final dynamic properties;
   final String? url;
 
@@ -36,11 +38,36 @@ class NewsDocument {
     this.url,
   });
 
-  factory NewsDocument.fromJson(Map<String, dynamic> json) => _$NewsDocumentFromJson(json);
-  
+  factory NewsDocument.fromJson(Map<String, dynamic> json) =>
+      _$NewsDocumentFromJson(json);
+
   Map<String, dynamic> toJson() => _$NewsDocumentToJson(this);
 }
 
+enum NewsCategory {
+  viewCountApproach,
+  viewCountReached,
+  anniversary;
+
+  static NewsCategory of(String name) {
+    switch (name) {
+      case "VIEW_COUNT_APPROACH":
+        return NewsCategory.viewCountApproach;
+      case "VIEW_COUNT_REACHED":
+        return NewsCategory.viewCountReached;
+      case "ANNIVERSARY":
+        return NewsCategory.anniversary;
+      default:
+        throw ArgumentError("illegal category: $name");
+    }
+  }
+}
+
 DateTime _dateTimeFromTimestamp(Map<String, dynamic> timestamp) {
-  return DateTime.fromMillisecondsSinceEpoch(timestamp['_seconds'] * 1000 + timestamp['_nanoseconds'] ~/ 1000000);
+  return DateTime.fromMillisecondsSinceEpoch(
+      timestamp['_seconds'] * 1000 + timestamp['_nanoseconds'] ~/ 1000000);
+}
+
+NewsCategory _newsCategoryFromString(String category) {
+  return NewsCategory.of(category);
 }

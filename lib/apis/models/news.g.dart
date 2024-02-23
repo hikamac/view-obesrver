@@ -26,7 +26,7 @@ NewsDocument _$NewsDocumentFromJson(Map<String, dynamic> json) => NewsDocument(
       updated: _dateTimeFromTimestamp(json['updated'] as Map<String, dynamic>),
       videoId: json['videoId'] as String,
       videoTitle: json['videoTitle'] as String,
-      category: json['category'] as String,
+      category: _newsCategoryFromString(json['category'] as String),
       properties: json['properties'],
       url: json['url'] as String?,
     );
@@ -36,7 +36,13 @@ Map<String, dynamic> _$NewsDocumentToJson(NewsDocument instance) =>
       'updated': instance.updated.toIso8601String(),
       'videoId': instance.videoId,
       'videoTitle': instance.videoTitle,
-      'category': instance.category,
+      'category': _$NewsCategoryEnumMap[instance.category]!,
       'properties': instance.properties,
       'url': instance.url,
     };
+
+const _$NewsCategoryEnumMap = {
+  NewsCategory.viewCountApproach: 'viewCountApproach',
+  NewsCategory.viewCountReached: 'viewCountReached',
+  NewsCategory.anniversary: 'anniversary',
+};

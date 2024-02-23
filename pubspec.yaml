@@ -41,6 +41,7 @@ dependencies:
   cloud_functions: ^4.6.0
   flutter_riverpod: ^2.4.10
   json_annotation: ^4.8.1
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
