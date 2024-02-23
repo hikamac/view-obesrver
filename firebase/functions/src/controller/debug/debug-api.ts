@@ -50,11 +50,11 @@ export const newsD = onRequest({region: firestoreRegion}, async (_, res) => {
     const newsQuery = new NewsQueryUseCase();
     const news = await newsQuery.query(20);
     const lastNews = news[news.length - 1];
-    const lastNewsId =
+    const lastViewedId =
       lastNews != null ? lastNews.generateNewsDocumentId() : null;
     res.status(200).send({
       news: news,
-      lastNewsId: lastNewsId,
+      lastViewedId: lastViewedId,
     });
   } catch (err) {
     logger.error("news: ", err);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/apis/models/news.dart';
@@ -7,6 +9,8 @@ class NewsList extends ConsumerWidget {
   final limit = 10;
   String? lastViewedId;
 
+  NewsList({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newsService = ref.watch(newsServiceProvider);
@@ -15,24 +19,20 @@ class NewsList extends ConsumerWidget {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
       } else if (snapshot.hasError) {
-        return Center(child: Text("Error: ${snapshot.error}"));
+        return Center(child: Text("Error: ${snapshot.error.toString()}"));
       } else {
-        return ListView.builder(itemCount: limit, itemBuilder: (_, index) {
-          return _createNewsList(snapshot.data!);
-        });
+        List<NewsDocument> newsList = snapshot.data!.news;
+        return SizedBox(
+          height: 300,
+          child: ListView.builder(itemCount: newsList.length, itemBuilder: (_, index) {
+            final news = newsList[index];
+            return ListTile(
+              title: Text(news.category),
+              subtitle: Text(news.videoTitle),
+            );          
+          }),
+        );
       }
-    });
-  }
-  
-  Widget _createNewsList(NewsListQueryResponse res) {
-    lastViewedId = res.lastViewedId;
-    final newsList = res.news;
-    return ListView.builder(itemCount: limit, itemBuilder: (_, index) {
-      final NewsDocument news = newsList[index];
-      return ListTile(
-        title: Text(news.category),
-        subtitle: Text(news.videoTitle),
-      );
     });
   }
 }

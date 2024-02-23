@@ -23,11 +23,11 @@ Map<String, dynamic> _$NewsListQueryResponseToJson(
     };
 
 NewsDocument _$NewsDocumentFromJson(Map<String, dynamic> json) => NewsDocument(
-      updated: DateTime.parse(json['updated'] as String),
+      updated: _dateTimeFromTimestamp(json['updated'] as Map<String, dynamic>),
       videoId: json['videoId'] as String,
       videoTitle: json['videoTitle'] as String,
       category: json['category'] as String,
-      properties: json['properties'] as Map<String, dynamic>?,
+      properties: json['properties'],
       url: json['url'] as String?,
     );
 

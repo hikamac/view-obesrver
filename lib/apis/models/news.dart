@@ -13,15 +13,18 @@ class NewsListQueryResponse {
   });
 
   factory NewsListQueryResponse.fromJson(Map<String, dynamic> json) => _$NewsListQueryResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$NewsListQueryResponseToJson(this);
 }
 
 @JsonSerializable()
 class NewsDocument {
+  @JsonKey(fromJson: _dateTimeFromTimestamp)
   final DateTime updated;
   final String videoId;
   final String videoTitle;
   final String category;
-  final Map<String, dynamic>? properties;
+  final dynamic properties;
   final String? url;
 
   NewsDocument({
@@ -36,4 +39,8 @@ class NewsDocument {
   factory NewsDocument.fromJson(Map<String, dynamic> json) => _$NewsDocumentFromJson(json);
   
   Map<String, dynamic> toJson() => _$NewsDocumentToJson(this);
+}
+
+DateTime _dateTimeFromTimestamp(Map<String, dynamic> timestamp) {
+  return DateTime.fromMillisecondsSinceEpoch(timestamp['_seconds'] * 1000 + timestamp['_nanoseconds'] ~/ 1000000);
 }

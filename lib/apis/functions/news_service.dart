@@ -6,12 +6,12 @@ class NewsService {
 
   NewsService(this._functions);
 
-  Future<NewsListQueryResponse> fetchNews({int limit = 20, String? lastViewedId}) async {
+  Future<NewsListQueryResponse> fetchNews(
+    {int limit = 20, String? lastViewedId}) async {
     final callable = _functions.httpsCallable('news');
-    final response = await callable.call({
-      'limit': limit,
-      'lastViewedId': lastViewedId
-    });
-    return NewsListQueryResponse.fromJson(Map<String, dynamic>.from(response.data));
+    final response =
+        await callable.call({'limit': limit, 'lastViewedId': lastViewedId});
+
+    return NewsListQueryResponse.fromJson(response.data);
   }
 }
