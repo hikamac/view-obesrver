@@ -16,6 +16,8 @@ jobs:
           channel: 'stable'
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
       - run: flutter test
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
