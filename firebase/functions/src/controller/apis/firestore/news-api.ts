@@ -11,7 +11,7 @@ import {firestoreRegion} from "../../../constant/setting-value";
  * W: 0
  *
  * @param {number} limit - max news count.
- * @param {string} lastNewsId - the last document Id in the previous res.
+ * @param {string} lastViewedId - the last document Id in the previous res.
  * @param {string} category - news category filter.
  *
  */
@@ -30,23 +30,25 @@ export const news = onCall({region: firestoreRegion}, async (req) => {
     const newsQuery = new NewsQueryUseCase();
     const news = await newsQuery.query(
       param.limit,
-      param.lastNewsId,
+      param.lastViewedId,
       param.category,
     );
-    const lastNewsId = news[news.length - 1].generateNewsDocumentId();
+    const lastNews = news[news.length - 1];
+    const lastViewedId =
+      lastNews != null ? lastNews.generateNewsDocumentId() : null;
     return {
       news: news,
-      lastNewsId: lastNewsId,
+      lastViewedId: lastViewedId,
     };
   } catch (err) {
     logger.error("news: ", err);
-    throw new HttpsError("internal", "", "");
+    throw new HttpsError("internal", "", `${err}`);
   }
 });
 
 interface NewsQueryRequest {
   // MIN(1), MAX(20)
   limit: number;
-  lastNewsId?: string;
+  lastViewedId?: string;
   category?: string;
 }

@@ -12,13 +12,13 @@ export class NewsQueryUseCase {
 
   public async query(
     limit: number,
-    lastNewsId?: string,
+    lastViewedId?: string,
     category?: string,
   ): Promise<Array<NewsDocument>> {
     const newsCategory = category as NewsCategory;
     return await this.newsRepo.getNewsWithCursor(
       limit,
-      lastNewsId,
+      lastViewedId,
       newsCategory,
     );
   }

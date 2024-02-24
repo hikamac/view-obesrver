@@ -34,16 +34,26 @@ export class NewsRepository extends FirestoreRepository<NewsDocument> {
     }
     const snapshot = await query.get();
     if (super.exists(snapshot)) {
-      return snapshot.docs.map((doc) => doc.data() as NewsDocument);
+      return snapshot.docs.map((doc) => {
+        const data = doc.data();
+        const videoId = NewsDocument.extractVideoId(doc.id);
+        const category = NewsDocument.extractCategory(doc.id);
+        return NewsDocument.reconstruct(
+          data.updated,
+          videoId,
+          data.videoTitle,
+          category,
+          data.properties || {},
+          data.url,
+        );
+      });
     }
     return [];
   }
 
   public async setNewsInTx(tx: Transaction, newsDoc: NewsDocument) {
     const ref = this.newsRef().doc(newsDoc.generateNewsDocumentId());
-    await super.addInTx<NewsDocument>(tx, ref, newsDoc, {
-      mergeFields: NewsDocument.mergeFields,
-    });
+    await super.addInTx<NewsDocument>(tx, ref, newsDoc);
   }
 
   public startBatch(): WriteBatch {
@@ -52,9 +62,7 @@ export class NewsRepository extends FirestoreRepository<NewsDocument> {
 
   public async addNewsWithBatch(batch: WriteBatch, newsDoc: NewsDocument) {
     const ref = this.newsRef().doc(newsDoc.generateNewsDocumentId());
-    super.setWithBatch(batch, ref, newsDoc, {
-      mergeFields: NewsDocument.mergeFields,
-    });
+    super.setWithBatch(batch, ref, newsDoc);
   }
 
   public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
