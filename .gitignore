@@ -49,3 +49,4 @@ app.*.map.json
 # environment variables
 .env
 **/env/env.g.dart
+firebase/.env.json
