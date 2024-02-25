@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
+import 'package:view_observer/apis/functions/mock.dart';
 import 'package:view_observer/apis/local_storage.dart';
 import 'package:view_observer/apis/models/news.dart';
 
@@ -11,6 +13,9 @@ class NewsService {
 
   Future<NewsListQueryResponse> fetchNews(
       {int limit = 20, String? lastViewedId}) async {
+    if (kDebugMode) {
+      return newsListMock;
+    }
     const String name = "news";
     final cachedJson = await loadCachedApiResultJson(name);
     if (cachedJson != null) {

@@ -1,10 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/apis/models/news.dart';
 import 'package:view_observer/providers/service_provider.dart';
 
+// ignore: must_be_immutable
 class NewsList extends ConsumerWidget {
   final limit = 10;
   String? lastViewedId;
@@ -30,27 +30,35 @@ class NewsList extends ConsumerWidget {
                   itemCount: newsList.length,
                   itemBuilder: (_, index) {
                     final news = newsList[index];
-                    return ListTile(
-                      leading: _getNewsIcon(news.category),
-                      title: Text(news.category.name),
-                      subtitle: Text(news.videoTitle),
-                    );
+                    return _getNewsListTile(news);
                   }),
             );
           }
         });
   }
 
-  Icon _getNewsIcon(NewsCategory category) {
-    switch (category) {
+  ListTile _getNewsListTile(NewsDocument news) {
+    late IconData iconData;
+    late String title;
+    switch (news.category) {
       case NewsCategory.viewCountApproach:
-        return const Icon(Icons.trending_up);
+        iconData = Icons.trending_up;
+        title = "${news.videoTitle} is almost at ${news.getMilestone()} views!";
       case NewsCategory.viewCountReached:
-      return const Icon(Icons.celebration);
+        iconData = Icons.celebration;
+        title = "${news.videoTitle} has hit over ${news.getMilestone()} views!";
       case NewsCategory.anniversary:
-        return const Icon(Icons.cake);
+        iconData = Icons.cake;
+        String formatted = DateFormat("MM/dd").format(news.getPublishedAt()!);
+        title = "$formatted is the anniversary of ${news.videoTitle}!";
       default:
-        return const Icon(Icons.info_outline);
+        return const ListTile(
+          leading: Icon(Icons.info_outline),
+        );
     }
+    return ListTile(
+      leading: Icon(iconData),
+      title: Text(title),
+    );
   }
 }
