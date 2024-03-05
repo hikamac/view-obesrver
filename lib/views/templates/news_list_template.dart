@@ -7,11 +7,6 @@ class NewsListTemplate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        NewsList(),
-      ],
-    );
+    return NewsList();
   }
 }
