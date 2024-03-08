@@ -30,9 +30,6 @@ class NewsListTile extends StatelessWidget {
     return ListTile(
           leading: Icon(iconData),
           title: Text(title),
-          shape: const RoundedRectangleBorder(
-            side: BorderSide(),
-          ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
     );
   }

@@ -27,7 +27,7 @@ NewsDocument _$NewsDocumentFromJson(Map<String, dynamic> json) => NewsDocument(
       videoId: json['videoId'] as String,
       videoTitle: json['videoTitle'] as String,
       category: _newsCategoryFromString(json['category'] as String),
-      properties: json['properties'],
+      properties: json['properties'] as Map<String, dynamic>?,
       url: json['url'] as String?,
     );
 
