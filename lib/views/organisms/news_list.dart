@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/apis/models/news.dart';
 import 'package:view_observer/providers/service_provider.dart';
 import 'package:view_observer/views/molecules/expansion_tile.dart';
 import 'package:view_observer/views/molecules/news_list_tile.dart';
+import 'package:view_observer/views/molecules/youtube_player.dart';
 
-// ignore: must_be_immutable
 class NewsList extends ConsumerWidget {
   final limit = 10;
   String? lastViewedId;
@@ -41,7 +40,11 @@ class NewsList extends ConsumerWidget {
                       final news = newsList[index];
                       return MyExpansionTile(
                         title: NewsListTile(news: news),
-                        children: const [Placeholder()],
+                        children: [
+                          MyYouTubePlayer(
+                            videoId: news.videoId,
+                          )
+                        ],
                       );
                     }),
               );

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class MyExpansionTile extends StatefulWidget {
-  const MyExpansionTile({super.key,
+  const MyExpansionTile({
+    super.key,
     required this.title,
     this.subtitle,
     required this.children,
