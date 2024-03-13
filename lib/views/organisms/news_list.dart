@@ -1,21 +1,29 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/apis/models/news.dart';
 import 'package:view_observer/providers/service_provider.dart';
+import 'package:view_observer/views/molecules/expansion_tile.dart';
+import 'package:view_observer/views/molecules/news_list_tile.dart';
+import 'package:view_observer/views/molecules/youtube_player.dart';
 
 class NewsList extends ConsumerWidget {
   final limit = 10;
-  String? lastViewedId;
+  final String? lastViewedId;
 
-  NewsList({super.key});
+  const NewsList({super.key, this.lastViewedId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newsService = ref.watch(newsServiceProvider);
 
-    return FutureBuilder(
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.black,
+          width: 2,
+        ),
+      ),
+      child: FutureBuilder(
         future: newsService.fetchNews(limit: limit, lastViewedId: lastViewedId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -24,33 +32,28 @@ class NewsList extends ConsumerWidget {
             return Center(child: Text("Error: ${snapshot.error.toString()}"));
           } else {
             List<NewsDocument> newsList = snapshot.data!.news;
-            return SizedBox(
-              height: 300,
-              child: ListView.builder(
-                  itemCount: newsList.length,
-                  itemBuilder: (_, index) {
-                    final news = newsList[index];
-                    return ListTile(
-                      leading: _getNewsIcon(news.category),
-                      title: Text(news.category.name),
-                      subtitle: Text(news.videoTitle),
-                    );
-                  }),
+            return ListView.builder(
+              itemCount: newsList.length,
+              itemBuilder: (_, index) {
+                final news = newsList[index];
+                return MyExpansionTile(
+                  title: NewsListTile(news: news),
+                  children: [
+                    _getYouTubePlayer(news),
+                  ],
+                );
+              },
             );
           }
-        });
+        },
+      ),
+    );
   }
 
-  Icon _getNewsIcon(NewsCategory category) {
-    switch (category) {
-      case NewsCategory.viewCountApproach:
-        return const Icon(Icons.trending_up);
-      case NewsCategory.viewCountReached:
-      return const Icon(Icons.celebration);
-      case NewsCategory.anniversary:
-        return const Icon(Icons.cake);
-      default:
-        return const Icon(Icons.info_outline);
-    }
+  Widget _getYouTubePlayer(NewsDocument news) {
+    return MyYouTubePlayer(
+      videoId: news.videoId,
+      padding: const EdgeInsets.all(10.0),
+    );
   }
 }
