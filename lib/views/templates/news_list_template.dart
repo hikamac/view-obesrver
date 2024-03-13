@@ -8,15 +8,15 @@ class NewsListTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Size screenSize = MediaQuery.of(context).size;
-    double height = screenSize.height * 0.2;
-    double width = screenSize.width * 0.5;
+    double height = screenSize.height;
+    double width = screenSize.width;
     return Center(
       child: Column(
         children: [
           SizedBox(
-            height: height,
-            width: width,
-            child: NewsList(),
+            height: height * 0.8,
+            width: width * 0.5,
+            child: const NewsList(),
           ),
         ],
       ),

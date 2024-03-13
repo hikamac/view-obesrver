@@ -8,13 +8,14 @@ import 'package:view_observer/views/molecules/youtube_player.dart';
 
 class NewsList extends ConsumerWidget {
   final limit = 10;
-  String? lastViewedId;
+  final String? lastViewedId;
 
-  NewsList({super.key});
+  const NewsList({super.key, this.lastViewedId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newsService = ref.watch(newsServiceProvider);
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
@@ -23,33 +24,36 @@ class NewsList extends ConsumerWidget {
         ),
       ),
       child: FutureBuilder(
-          future:
-              newsService.fetchNews(limit: limit, lastViewedId: lastViewedId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text("Error: ${snapshot.error.toString()}"));
-            } else {
-              List<NewsDocument> newsList = snapshot.data!.news;
-              return LimitedBox(
-                maxHeight: 300,
-                child: ListView.builder(
-                    itemCount: newsList.length,
-                    itemBuilder: (_, index) {
-                      final news = newsList[index];
-                      return MyExpansionTile(
-                        title: NewsListTile(news: news),
-                        children: [
-                          MyYouTubePlayer(
-                            videoId: news.videoId,
-                          )
-                        ],
-                      );
-                    }),
-              );
-            }
-          }),
+        future: newsService.fetchNews(limit: limit, lastViewedId: lastViewedId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error.toString()}"));
+          } else {
+            List<NewsDocument> newsList = snapshot.data!.news;
+            return ListView.builder(
+              itemCount: newsList.length,
+              itemBuilder: (_, index) {
+                final news = newsList[index];
+                return MyExpansionTile(
+                  title: NewsListTile(news: news),
+                  children: [
+                    _getYouTubePlayer(news),
+                  ],
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _getYouTubePlayer(NewsDocument news) {
+    return MyYouTubePlayer(
+      videoId: news.videoId,
+      padding: const EdgeInsets.all(10.0),
     );
   }
 }

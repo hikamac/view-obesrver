@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:view_observer/constants/configure_value.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class MyYouTubePlayer extends StatefulWidget {
@@ -35,18 +37,28 @@ class _MyYouTubePlayerState extends State<MyYouTubePlayer> {
 
   @override
   void dispose() {
+    if (!kIsWeb) {
+      controller.close();
+    }
     super.dispose();
-    controller.close();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: widget.padding ?? const EdgeInsets.all(0),
-      margin: widget.margin ?? const EdgeInsets.all(0),
-      child: YoutubePlayer(
-        controller: controller,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraint) {
+        double width = constraint.maxWidth;
+        double height = width * aspectRatio;
+        return Container(
+          width: width,
+          height: height,
+          padding: widget.padding ?? const EdgeInsets.all(0),
+          margin: widget.margin ?? const EdgeInsets.all(0),
+          child: YoutubePlayer(
+            controller: controller,
+          ),
+        );
+      }
     );
   }
 
