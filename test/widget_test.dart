@@ -18,7 +18,7 @@ void main() {
   setupFirebaseAuthMocks();
   setUpAll(() async => await Firebase.initializeApp());
   testWidgets("NewsList test", (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(
+    await tester.pumpWidget(ProviderScope(
       child: MyApp(),
     ));
     await tester.pumpAndSettle();

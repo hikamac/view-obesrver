@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:view_observer/router/route_path.dart';
 
-class RouterParser extends RouteInformationParser<RoutePath> {
+class RouteParser extends RouteInformationParser<RoutePath> {
   @override
   Future<RoutePath> parseRouteInformation(RouteInformation routeInformation) async {
     final uri = routeInformation.uri;

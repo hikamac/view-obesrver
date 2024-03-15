@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:view_observer/router/route_path.dart';
 import 'package:view_observer/views/pages/top_page.dart';
+import 'package:view_observer/views/templates/app_shell.dart';
 
 class RouterDelegator extends RouterDelegate<RoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<RoutePath> {
@@ -19,10 +20,10 @@ class RouterDelegator extends RouterDelegate<RoutePath>
     return Navigator(
       key: navigatorKey,
       pages: [
-        if (_currentPath is TopPagePath)
-          const MaterialPage(key: ValueKey("TopPage"), child: TopPage()),
-        if (_currentPath is NewsListPath)
-          const MaterialPage(child: Placeholder())
+        MaterialPage(
+          key: const ValueKey("shell"),
+          child: AppShell(child: _buildCurrentPage()),
+        )
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
@@ -33,6 +34,15 @@ class RouterDelegator extends RouterDelegate<RoutePath>
         return true;
       },
     );
+  }
+
+  Widget _buildCurrentPage() {
+    if (_currentPath is TopPagePath) {
+      return const TopPage();
+    } else if (_currentPath is NewsListPath) {
+      return const Placeholder();
+    }
+    return const TopPage();
   }
 
   @override
