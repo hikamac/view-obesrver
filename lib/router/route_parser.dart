@@ -7,11 +7,16 @@ class RouteParser extends RouteInformationParser<RoutePath> {
     final uri = routeInformation.uri;
     if (uri.pathSegments.isEmpty) {
       return TopPagePath();
-    } else if (uri.path == NewsListPath.path) {
-      return NewsListPath();
     }
-    
-    return TopPagePath();
+    final segment = uri.pathSegments.first;
+    switch (segment) {
+      case SNSLinksPagePath.path:
+        return SNSLinksPagePath();
+      case NewsListPath.path:
+        return NewsListPath();
+      default:
+        return UnknownPath();
+    }
   }
 
   @override
