@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:view_observer/constants/color.dart';
 import 'package:view_observer/domain/models/sns_link.dart';
+import 'package:view_observer/env/env.dart';
 
 class SNSLinksPage extends StatelessWidget {
   SNSLinksPage({super.key});
@@ -14,7 +15,7 @@ class SNSLinksPage extends StatelessWidget {
     SNSLink(
         name: "note",
         uri: Uri.https("note.com", "/search",
-            {"context": "note", "q": "", "sort": "new"})),
+            {"context": "note", "q": Env.searchKeyword, "sort": "new"})),
   ];
 
   @override
