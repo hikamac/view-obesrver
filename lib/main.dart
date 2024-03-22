@@ -17,20 +17,19 @@ void main() async {
   runApp(ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   MyApp({super.key});
-  final _routerDelegator = RouterDelegator();
-  final _routeParser = RouteParser();
+  final _routeParser = RouteInfoParser();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      routerDelegate: _routerDelegator,
+      routerDelegate: RouterDelegator(ref),
       routeInformationParser: _routeParser,
     );
   }

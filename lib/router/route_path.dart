@@ -1,23 +1,18 @@
 abstract class RoutePath {
-  Uri uri;
-  RoutePath(String path) : uri = Uri(path: path);
+  String get path;
 }
 
 class TopPagePath extends RoutePath {
-  TopPagePath() : super("/${TopPagePath.path}");
-  static const path = "";
+  @override
+  String get path => "/";
 }
 
 class SNSLinksPagePath extends RoutePath {
-  SNSLinksPagePath() : super("/${TopPagePath.path}");
-  static const path = "link";
-}
-
-class NewsListPath extends RoutePath {
-  NewsListPath() : super("/${NewsListPath.path}");
-  static const path = "news";
+  @override
+  String get path => "/link";
 }
 
 class UnknownPath extends RoutePath {
-  UnknownPath() : super("/404");
+  @override
+  String get path => "/404";
 }

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:view_observer/providers/navigation_state_provider.dart';
 import 'package:view_observer/router/route_path.dart';
-import 'package:view_observer/router/router_delegator.dart';
 import 'package:view_observer/views/organisms/news_list.dart';
 
-class NewsListTemplate extends ConsumerWidget {
-  const NewsListTemplate({super.key});
+class NewsListTemplate extends StatelessWidget {
+  final WidgetRef ref;
+  const NewsListTemplate({super.key, required this.ref});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double height = screenSize.height;
     double width = screenSize.width;
@@ -22,8 +23,8 @@ class NewsListTemplate extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () {
-                final routerDelegator = Router.of(context).routerDelegate as RouterDelegator;
-                routerDelegator.navigateTo(SNSLinksPagePath());
+                ref.read(navigationStateProvider.notifier)
+                  .setPath(SNSLinksPagePath());
             },
             child: const Text("SNS Links Page"),
           ),

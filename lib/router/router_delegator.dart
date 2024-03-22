@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:view_observer/providers/navigation_state_provider.dart';
 import 'package:view_observer/router/route_path.dart';
 import 'package:view_observer/views/pages/sns_links_page.dart';
 import 'package:view_observer/views/pages/top_page.dart';
@@ -8,11 +10,17 @@ class RouterDelegator extends RouterDelegate<RoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<RoutePath> {
   @override
   final GlobalKey<NavigatorState> navigatorKey;
-  RouterDelegator()
-      : navigatorKey = GlobalKey<NavigatorState>(),
-        _currentPath = TopPagePath();
-
+  final WidgetRef ref;
   RoutePath _currentPath;
+  RouterDelegator(this.ref)
+      : navigatorKey = GlobalKey<NavigatorState>(),
+        _currentPath = TopPagePath() {
+    ref.listen<RoutePath>(navigationStateProvider, (_, newPath) {
+      _currentPath = newPath;
+      notifyListeners();
+    });
+  }
+
   @override
   RoutePath? get currentConfiguration => _currentPath;
 
@@ -22,53 +30,44 @@ class RouterDelegator extends RouterDelegate<RoutePath>
       key: navigatorKey,
       pages: [
         MaterialPage(
-          key: const ValueKey("shell"),
-          child: AppShell(child: _buildCurrentPage()),
-        )
+          child: AppShell(
+            child: _buildCurrentPage(),
+          ),
+        ),
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
           return false;
         }
 
-        _handleRoutePathChanged(TopPagePath());
+        _onPopPage.call();
         return true;
       },
     );
   }
 
   Widget _buildCurrentPage() {
-    switch (_currentPath.runtimeType) {
-      case TopPagePath:
-        return const TopPage();
-      case SNSLinksPagePath:
-        return SNSLinksPage();
-      case NewsListPath:
-        return const Placeholder();
-      case UnknownPath:
-        return const Placeholder();
+    if (_currentPath is TopPagePath) {
+      return const TopPage();
+    }
+    if (_currentPath is SNSLinksPagePath) {
+      return SNSLinksPage();
     }
     return const TopPage();
   }
 
   @override
   Future<void> setNewRoutePath(configuration) async {
-    _handleRoutePathChanged(configuration);
+    _currentPath = configuration;
+    notifyListeners();
   }
 
-  void _handleRoutePathChanged(RoutePath path) {
-    if (path != _currentPath) {
-      _currentPath = path;
-      notifyListeners();
+  void _onPopPage() {
+    if (_currentPath is SNSLinksPagePath) {
+      _currentPath = TopPagePath();
+    } else {
+      _currentPath = TopPagePath();
     }
-  }
-
-  /* */
-
-  void navigateTo(RoutePath path) {
-    if (path != _currentPath) {
-      _currentPath = path;
-      notifyListeners();
-    }
+    notifyListeners();
   }
 }
