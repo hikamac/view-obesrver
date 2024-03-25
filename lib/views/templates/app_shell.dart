@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:view_observer/views/organisms/app_bar.dart';
+import 'package:view_observer/views/organisms/side_bar.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -10,6 +11,7 @@ class AppShell extends StatelessWidget {
     return Scaffold(
       appBar: const MyAppBar(),
       body: child,
+      drawer: const SideBar(),
     );
   }
 }
