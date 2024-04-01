@@ -1,12 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:view_observer/apis/local_storage.dart';
+import 'package:view_observer/firebase_options.dart';
 import 'package:view_observer/router/route_parser.dart';
 import 'package:view_observer/router/router_delegator.dart';
 import 'package:view_observer/views/pages/top_page.dart';
 
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await setUpSharedPreference();
+  usePathUrlStrategy();
   runApp(ProviderScope(child: MyApp()));
 }
 
