@@ -12,10 +12,6 @@ export class VideoDocument extends DocumentModel {
   constructor(init: Partial<VideoDocument>) {
     super(init);
   }
-
-  public setUpdatedNow(): void {
-    this.updated = FieldValue.serverTimestamp();
-  }
 }
 
 // sub doc
