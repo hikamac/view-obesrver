@@ -150,10 +150,10 @@ export class ViewCountUseCase {
     oldDoc: VideoDocument,
     viewCount: number,
   ): Promise<void> {
-    const newVideoDoc = {
+    const newVideoDoc = new VideoDocument({
       ...oldDoc,
       milestone: calcMilestone(viewCount),
-    } as VideoDocument;
+    });
     newVideoDoc.setUpdatedNow();
     await this.videoRepo.updateVideoInTx(tx, docId, newVideoDoc);
   }
