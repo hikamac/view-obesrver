@@ -31,7 +31,10 @@ jobs:
         run: npm install -g firebase-tools
       - name: Deploy to Firebase Functions
         run: |
-          cd firebase
+          cd firebase/functions
+          npm install
+          cd ../
+          npm install
           firebase deploy --only functions --project observe-notify
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
