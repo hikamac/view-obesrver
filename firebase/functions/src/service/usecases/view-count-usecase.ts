@@ -154,7 +154,6 @@ export class ViewCountUseCase {
       ...oldDoc,
       milestone: calcMilestone(viewCount),
     });
-    newVideoDoc.setUpdatedNow();
     await this.videoRepo.updateVideoInTx(tx, docId, newVideoDoc);
   }
 

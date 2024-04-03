@@ -93,7 +93,8 @@ export abstract class FirestoreRepository<T extends DocumentModel> {
     docRef: DocumentReference<T>,
     data: T,
   ) {
-    tx.update(docRef, data as UpdateData<T>);
+    const obj = data.parseObj();
+    tx.update(docRef, obj as UpdateData<T>);
   }
 
   /* Batch */
