@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/views/organisms/news_list.dart';
+import 'package:view_observer/views/templates/template_widget.dart';
 
-class NewsListTemplate extends StatelessWidget {
-  const NewsListTemplate({super.key});
+class NewsListTemplate extends Template {
+  const NewsListTemplate({super.key, this.ref});
+
+  final WidgetRef? ref;
 
   @override
   Widget build(BuildContext context) {

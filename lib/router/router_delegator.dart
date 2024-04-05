@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/providers/navigation_state_provider.dart';
 import 'package:view_observer/router/route_path.dart';
-import 'package:view_observer/views/pages/sns_links_page.dart';
-import 'package:view_observer/views/pages/top_page.dart';
 import 'package:view_observer/views/templates/app_shell.dart';
 
 class RouterDelegator extends RouterDelegate<RoutePath>
@@ -47,13 +45,7 @@ class RouterDelegator extends RouterDelegate<RoutePath>
   }
 
   Widget _buildCurrentPage() {
-    if (_currentPath is TopPagePath) {
-      return const TopPage();
-    }
-    if (_currentPath is SNSLinksPagePath) {
-      return SNSLinksPage();
-    }
-    return const TopPage();
+    return _currentPath.pageWidget;
   }
 
   @override
