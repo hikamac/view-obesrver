@@ -10,7 +10,7 @@ export const calculateRestDaysFor = (aniversaryDate: Date): number => {
   const anivM = aniversaryDate.getMonth();
   const anivD = aniversaryDate.getDate();
   const nowM = now.getMonth();
-  const nowD = aniversaryDate.getDate();
+  const nowD = now.getDate();
 
   if (nowM < anivM || (nowM === anivM && nowD < anivD)) {
     aniversaryDate.setFullYear(now.getFullYear());
