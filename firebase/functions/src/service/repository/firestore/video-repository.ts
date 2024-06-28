@@ -1,5 +1,6 @@
 import {
   CollectionReference,
+  FieldValue,
   Firestore,
   Transaction,
   WriteBatch,
@@ -10,6 +11,7 @@ import {
   ViewHistory,
   VideoDocument,
 } from "../../../model/firestore/video-document";
+import {logger} from "firebase-functions/v1";
 
 const COLLECTION_NAME = "video";
 const SUB_COLLECTION_NAME = "view-history";
@@ -105,6 +107,62 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       SUB_COLLECTION_NAME,
       viewHistory,
     );
+  }
+
+  public async fixViewHistoryCreatedAndUpdated(): Promise<{
+    batchCount: number;
+    totalFixed: number;
+  }> {
+    const viewHistoryCollection =
+      this.firestore.collectionGroup(SUB_COLLECTION_NAME);
+    const LIMIT = 500;
+    let lastDoc = null;
+    let batchCount = 0;
+    let totalFixed = 0;
+
+    do {
+      let query = viewHistoryCollection.orderBy("__name__").limit(LIMIT);
+      if (lastDoc) {
+        query = query.startAfter(lastDoc);
+      }
+
+      const snapshot = await query.get();
+      if (super.exists(snapshot)) {
+        logger.info("No more documents to process");
+      }
+
+      const batch = this.firestore.batch();
+
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data();
+
+        const created =
+          data.created && data.created._seconds ? data.created : data.updated;
+        let updated = undefined;
+        if (data.created && data.created._seconds) {
+          updated = data.created;
+        } else if (data.updated) {
+          updated = data.updated;
+        } else {
+          updated = FieldValue.serverTimestamp();
+        }
+
+        batch.update(doc.ref, {created: created, updated: updated});
+      });
+
+      await batch.commit();
+      lastDoc = snapshot.docs[snapshot.docs.length - 1];
+      batchCount += 1;
+      totalFixed += snapshot.size;
+    } while (lastDoc);
+
+    logger.info("All documents have been updated.");
+    logger.info(
+      "%d batches proceeded, %d documents are fixed.",
+      batchCount,
+      totalFixed,
+    );
+    return {batchCount: batchCount, totalFixed: totalFixed};
   }
 
   public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
