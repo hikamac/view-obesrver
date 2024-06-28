@@ -129,9 +129,13 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       const snapshot = await query.get();
       if (snapshot.empty) {
         logger.info(`No more documents to process in batch ${batchCount + 1}.`);
+        console.log(`No more documents to process in batch ${batchCount + 1}.`);
         break;
       } else {
         logger.info(
+          `Fetched ${snapshot.size} documents in batch ${batchCount + 1}.`,
+        );
+        console.log(
           `Fetched ${snapshot.size} documents in batch ${batchCount + 1}.`,
         );
       }
@@ -155,6 +159,7 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
 
         if (proccessedCount % 10 == 0) {
           logger.info(`${proccessedCount} docs in ${batchCount} batches`);
+          console.log(`${proccessedCount} docs in ${batchCount} batches`);
         }
 
         batch.update(doc.ref, {created: created, updated: updated});
@@ -168,7 +173,11 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     } while (lastDoc);
 
     logger.info("All documents have been updated.");
+    console.log("All documents have been updated.");
     logger.info(
+      `${batchCount} batches proceeded, ${totalFixed} documents are fixed.`,
+    );
+    console.log(
       `${batchCount} batches proceeded, ${totalFixed} documents are fixed.`,
     );
     return {batchCount: batchCount, totalFixed: totalFixed};

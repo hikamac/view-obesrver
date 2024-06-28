@@ -13,6 +13,8 @@ export class DocumentModel {
         return value;
       } else if (value instanceof Date) {
         return Timestamp.fromDate(value);
+      } else if (value instanceof FieldValue) {
+        return value;
       } else if (Array.isArray(value)) {
         return value.map(parseValue);
       } else if (value instanceof Object) {
