@@ -127,8 +127,9 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       }
 
       const snapshot = await query.get();
-      if (super.exists(snapshot)) {
+      if (snapshot.empty) {
         logger.info("No more documents to process");
+        break;
       }
 
       const batch = this.firestore.batch();
