@@ -109,6 +109,12 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     );
   }
 
+  private viewHistoryBatchCursorDoc = this.firestore
+    .collection("DEBUG")
+    .doc("view-history-cursor");
+  /**
+   * TODO: temporary function to fix bugs
+   */
   public async fixViewHistoryCreatedAndUpdated(): Promise<{
     batchCount: number;
     totalFixed: number;
@@ -116,68 +122,50 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     const viewHistoryCollection =
       this.firestore.collectionGroup(SUB_COLLECTION_NAME);
     const LIMIT = 500;
-    let lastDoc = null;
-    let batchCount = 0;
-    let totalFixed = 0;
+    const prev = await this.viewHistoryBatchCursorDoc.get();
+    const lastDoc = prev.exists ? prev.data()?.cursor : null;
+    const batchCount = (prev.exists ? prev.data()?.batchCount : 0) + 1;
+    const totalFixed = (prev.exists ? prev.data()?.totalFixed : 0) + 1;
 
-    do {
-      let query = viewHistoryCollection.orderBy("__name__").limit(LIMIT);
-      if (lastDoc) {
-        query = query.startAfter(lastDoc);
-      }
+    let query = viewHistoryCollection.orderBy("updated", "desc").limit(LIMIT);
+    if (lastDoc) {
+      query = query.startAfter(lastDoc);
+    }
 
-      const snapshot = await query.get();
-      if (snapshot.empty) {
-        logger.info(`No more documents to process in batch ${batchCount + 1}.`);
-        console.log(`No more documents to process in batch ${batchCount + 1}.`);
-        break;
+    const snapshot = await query.get();
+    if (snapshot.empty) {
+      logger.info(`No more documents to process in batch ${batchCount}.`);
+      logger.info(`Fetched ${snapshot.size} documents in batch ${batchCount}.`);
+    }
+
+    const batch = this.firestore.batch();
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+
+      const created =
+        data.created && data.created._seconds ? data.created : data.updated;
+      let updated = undefined;
+      if (data.created && data.created._seconds) {
+        updated = data.created;
+      } else if (data.updated) {
+        updated = data.updated;
       } else {
-        logger.info(
-          `Fetched ${snapshot.size} documents in batch ${batchCount + 1}.`,
-        );
-        console.log(
-          `Fetched ${snapshot.size} documents in batch ${batchCount + 1}.`,
-        );
+        updated = FieldValue.serverTimestamp();
       }
 
-      const batch = this.firestore.batch();
+      batch.update(doc.ref, {created: created, updated: updated});
+    });
 
-      let proccessedCount = 0;
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-
-        const created =
-          data.created && data.created._seconds ? data.created : data.updated;
-        let updated = undefined;
-        if (data.created && data.created._seconds) {
-          updated = data.created;
-        } else if (data.updated) {
-          updated = data.updated;
-        } else {
-          updated = FieldValue.serverTimestamp();
-        }
-
-        if (proccessedCount % 10 == 0) {
-          logger.info(`${proccessedCount} docs in ${batchCount} batches`);
-          console.log(`${proccessedCount} docs in ${batchCount} batches`);
-        }
-
-        batch.update(doc.ref, {created: created, updated: updated});
-        proccessedCount++;
-      });
-
-      await batch.commit();
-      lastDoc = snapshot.docs[snapshot.docs.length - 1];
-      batchCount += 1;
-      totalFixed += snapshot.size;
-    } while (lastDoc);
+    await batch.commit();
+    await this.viewHistoryBatchCursorDoc.set({
+      cursor: snapshot.docs[snapshot.docs.length - 1].id,
+      batchCount: lastDoc.batchCount + 1,
+      totalFixed: lastDoc.totalFixed + snapshot.size,
+    });
 
     logger.info("All documents have been updated.");
-    console.log("All documents have been updated.");
     logger.info(
-      `${batchCount} batches proceeded, ${totalFixed} documents are fixed.`,
-    );
-    console.log(
       `${batchCount} batches proceeded, ${totalFixed} documents are fixed.`,
     );
     return {batchCount: batchCount, totalFixed: totalFixed};

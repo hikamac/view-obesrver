@@ -8,7 +8,7 @@ export class DebugUtils {
     if (this.logStream !== undefined) {
       return;
     }
-    const logFile = path.join("/resource/log", `logs_${Date.now()}.log`);
+    const logFile = path.join(`${process.cwd()}/log`, `logs_${Date.now()}.log`);
     this.logStream = fs.createWriteStream(logFile, {flags: "a"});
     const originalConsoleLog = console.log;
     console.log = (message, ...optionalParams) => {
