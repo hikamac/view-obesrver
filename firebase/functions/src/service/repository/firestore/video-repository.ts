@@ -109,27 +109,26 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     );
   }
 
-  private viewHistoryBatchCursorDoc = this.firestore
-    .collection("DEBUG")
-    .doc("view-history-cursor");
-  /**
+  /*
    * TODO: temporary function to fix bugs
    */
-  public async fixViewHistoryCreatedAndUpdated(): Promise<{
+  public async fixViewHistoryCreatedAndUpdated(
+    lastDocId: string | undefined,
+    batchCount: number,
+    totalFixed: number,
+  ): Promise<{
+    lastDocId: string | undefined;
     batchCount: number;
     totalFixed: number;
   }> {
     const viewHistoryCollection =
       this.firestore.collectionGroup(SUB_COLLECTION_NAME);
     const LIMIT = 500;
-    const prev = await this.viewHistoryBatchCursorDoc.get();
-    const lastDoc = prev.exists ? prev.data()?.cursor : null;
-    const batchCount = (prev.exists ? prev.data()?.batchCount : 0) + 1;
-    const totalFixed = (prev.exists ? prev.data()?.totalFixed : 0) + 1;
+    const _batchCount = batchCount + 1;
 
     let query = viewHistoryCollection.orderBy("updated", "desc").limit(LIMIT);
-    if (lastDoc) {
-      query = query.startAfter(lastDoc);
+    if (lastDocId) {
+      query = query.startAfter(lastDocId);
     }
 
     const snapshot = await query.get();
@@ -158,17 +157,20 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     });
 
     await batch.commit();
-    await this.viewHistoryBatchCursorDoc.set({
-      cursor: snapshot.docs[snapshot.docs.length - 1].id,
-      batchCount: lastDoc.batchCount + 1,
-      totalFixed: lastDoc.totalFixed + snapshot.size,
-    });
 
+    const _totalFixed = totalFixed + snapshot.size;
     logger.info("All documents have been updated.");
     logger.info(
-      `${batchCount} batches proceeded, ${totalFixed} documents are fixed.`,
+      `${_batchCount} batches proceeded, ${_totalFixed} documents are fixed.`,
     );
-    return {batchCount: batchCount, totalFixed: totalFixed};
+
+    const _lastDocId: string | undefined =
+      snapshot.size > 0 ? snapshot.docs[snapshot.size - 1].id : undefined;
+    return {
+      lastDocId: _lastDocId,
+      batchCount: _batchCount,
+      totalFixed: _totalFixed,
+    };
   }
 
   public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {

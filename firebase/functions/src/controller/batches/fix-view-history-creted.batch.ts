@@ -5,14 +5,14 @@ import {ViewHistoryUseCase} from "../../service/usecases/view-history-usecase";
 
 export const fixViewHistoryCreated = functions
   .region(firestoreRegion)
-  .pubsub.schedule("every 30 seconds")
+  .pubsub.schedule("every 2 minutes")
   .onRun(async () => {
     try {
       const viewHistoryUseCase = new ViewHistoryUseCase();
       const result = await viewHistoryUseCase.fixViewHistoryCreated();
       logger.info(
-        `${result.batchCount}th process finished. The total is now
-        ${result.totalFixed}.`,
+        `${result.batchCount}th process finished. ` +
+          `The total is now ${result.totalFixed}.`,
       );
     } catch (err) {
       logger.error(err);
