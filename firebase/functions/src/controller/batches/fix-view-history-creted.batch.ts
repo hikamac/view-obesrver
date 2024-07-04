@@ -5,7 +5,7 @@ import {ViewHistoryUseCase} from "../../service/usecases/view-history-usecase";
 
 export const fixViewHistoryCreated = functions
   .region(firestoreRegion)
-  .pubsub.schedule("every 2 minutes")
+  .pubsub.schedule("every 2 hours")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
     try {
