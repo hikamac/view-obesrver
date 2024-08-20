@@ -29,7 +29,7 @@ export class ViewHistoryUseCase {
 
     await this.debugRepo.setCursor(
       new DebugDocument({
-        lastDocId: fixResult.lastDocId,
+        viewHistoryDocId: fixResult.lastDocId,
         batchCount: fixResult.batchCount,
         totalFixed: fixResult.totalFixed,
       }),
