@@ -2,6 +2,7 @@ import {
   CollectionReference,
   FieldValue,
   Firestore,
+  Timestamp,
   Transaction,
   WriteBatch,
   WriteResult,
@@ -15,6 +16,7 @@ import {logger} from "firebase-functions/v1";
 
 const COLLECTION_NAME = "video";
 const SUB_COLLECTION_NAME = "view-history";
+// const BATCH_SIZE = 500;
 
 export class VideoRepository extends FirestoreRepository<VideoDocument> {
   constructor(firestore: Firestore) {
@@ -135,6 +137,7 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     if (snapshot.empty) {
       logger.info(`No more documents to process in batch ${batchCount}.`);
       logger.info(`Fetched ${snapshot.size} documents in batch ${batchCount}.`);
+      throw Error("complete");
     }
 
     const batch = this.firestore.batch();
@@ -172,6 +175,42 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       totalFixed: _totalFixed,
     };
   }
+
+  public async getViewHistoriesBetween(
+    videoDocId: string,
+    from: Date,
+    to: Date,
+  ): Promise<Record<string, ViewHistory>> {
+    const viewHistoryDocs = await this.viewHistoryRef(videoDocId)
+      .where("created", ">=", Timestamp.fromDate(from))
+      .where("created", "<", Timestamp.fromDate(to))
+      .orderBy("created", "asc")
+      .get();
+    if (viewHistoryDocs.empty) {
+      return {};
+    }
+    const docIdAndData: Record<string, ViewHistory> =
+      viewHistoryDocs.docs.reduce(
+        (acc, doc) => {
+          acc[doc.id] = doc.data();
+          return acc;
+        },
+        {} as Record<string, ViewHistory>,
+      );
+    return docIdAndData;
+  }
+
+  // public async deleteViewHistries(
+  //   videoDocId: string,
+  //   viewHistoryDocIds: string[],
+  // ) {
+  //   const maxTryAtOnce = BATCH_SIZE;
+  //   const batch = this.firestore.batch();
+  //   const counter = 0;
+  //   for (const id of viewHistoryDocIds) {
+  //     batch.delete(id);
+  //   }
+  // }
 
   public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
     return await super.commitBatch(batch);

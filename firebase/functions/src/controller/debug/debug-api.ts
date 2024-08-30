@@ -1,4 +1,6 @@
 import * as logger from "firebase-functions/logger";
+import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import {defineString} from "firebase-functions/params";
 import {onRequest} from "firebase-functions/v2/https";
 import {SecretManager} from "../../service/secret-manager";
@@ -9,6 +11,9 @@ import {OkResponse} from "../../model/ok-response";
 import {ViewCountUseCase} from "../../service/usecases/view-count-usecase";
 import {firestoreRegion} from "../../constant/setting-value";
 import {NewsQueryUseCase} from "../../service/usecases/news-query-usecase";
+// prettier-ignore
+import {ExportSpreadSheetUseCase}
+  from "../../service/usecases/export-spreadsheet-usecase";
 
 export const aniv = onRequest(async (_, res) => {
   const envVarsName = defineString("ENV_NAME").value();
@@ -61,3 +66,60 @@ export const newsD = onRequest({region: firestoreRegion}, async (_, res) => {
     res.status(500).send("internal");
   }
 });
+
+export const createExportDataForSpreadSheetDev = functions
+  .region(firestoreRegion)
+  .runWith({timeoutSeconds: 540})
+  .https.onRequest(async (req, res) => {
+    const videoDocId = `${req.query.id}`;
+    logger.info(`videoDocId is ${videoDocId}`);
+
+    try {
+      const firestore = admin.firestore();
+      const videoDoc = firestore.collection("video").doc(videoDocId);
+      const viewHistoryCollection = videoDoc.collection("view-history");
+
+      const snapshot = await viewHistoryCollection
+        .orderBy("updated", "desc")
+        .get();
+
+      logger.info(`snapshot size is ${snapshot.size}`);
+
+      const batch = firestore.batch();
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+
+        const created =
+          data.created && data.created._seconds ? data.created : data.updated;
+        let updated = undefined;
+        if (data.created && data.created._seconds) {
+          updated = data.created;
+        } else {
+          updated = data.updated;
+        }
+
+        batch.set(doc.ref, {created: created, updated: updated}, {merge: true});
+      }
+
+      await batch.commit();
+
+      res.status(200).send(`${snapshot.size} docs were fixed.`);
+    } catch (err) {
+      logger.error(err);
+      res.status(500).send();
+    }
+  });
+
+export const exportSpreadSheetD = functions
+  .region(firestoreRegion)
+  .runWith({timeoutSeconds: 540})
+  .https.onRequest(async (_, res) => {
+    const exportSpreadSheetUseCase = new ExportSpreadSheetUseCase();
+    try {
+      await exportSpreadSheetUseCase.exportLastMonthVideoDocs();
+      res.status(200).send();
+    } catch (err) {
+      logger.error(err);
+      res.status(500).send();
+    }
+  });
