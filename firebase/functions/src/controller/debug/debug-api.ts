@@ -14,6 +14,7 @@ import {NewsQueryUseCase} from "../../service/usecases/news-query-usecase";
 // prettier-ignore
 import {ExportSpreadSheetUseCase}
   from "../../service/usecases/export-spreadsheet-usecase";
+import {json} from "../../type/types";
 
 export const aniv = onRequest(async (_, res) => {
   const envVarsName = defineString("ENV_NAME").value();
@@ -113,10 +114,23 @@ export const createExportDataForSpreadSheetDev = functions
 export const exportSpreadSheetD = functions
   .region(firestoreRegion)
   .runWith({timeoutSeconds: 540})
-  .https.onRequest(async (_, res) => {
-    const exportSpreadSheetUseCase = new ExportSpreadSheetUseCase();
+  .https.onRequest(async (req, res) => {
+    const envVarsName = defineString("ENV_NAME").value();
+    const email = defineString("EMAIL").value();
+    const env = await SecretManager.setUpAsync(envVarsName);
+    const googleSheetApiKeyJson = env.get<json>("GOOGLE_SHEET_API_KEY_JSON");
+    const exportSpreadSheetUseCase = new ExportSpreadSheetUseCase(
+      googleSheetApiKeyJson,
+      email,
+    );
+    const from = Number(req.query.from);
+    const to = Number(req.query.to);
     try {
-      await exportSpreadSheetUseCase.exportLastMonthVideoDocs();
+      if (from < 0) {
+        await exportSpreadSheetUseCase.deleteAllSpreadSheetD();
+      } else {
+        await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(from, to);
+      }
       res.status(200).send();
     } catch (err) {
       logger.error(err);

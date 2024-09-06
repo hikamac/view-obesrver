@@ -1,5 +1,6 @@
 import {
   CollectionReference,
+  DocumentReference,
   FieldValue,
   Firestore,
   Timestamp,
@@ -16,7 +17,7 @@ import {logger} from "firebase-functions/v1";
 
 const COLLECTION_NAME = "video";
 const SUB_COLLECTION_NAME = "view-history";
-// const BATCH_SIZE = 500;
+const BATCH_SIZE = 500;
 
 export class VideoRepository extends FirestoreRepository<VideoDocument> {
   constructor(firestore: Firestore) {
@@ -180,15 +181,15 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     videoDocId: string,
     from: Date,
     to: Date,
-  ): Promise<Record<string, ViewHistory>> {
+  ): Promise<{
+    docIdAndData: Record<string, ViewHistory>;
+    docRefs: DocumentReference[];
+  }> {
     const viewHistoryDocs = await this.viewHistoryRef(videoDocId)
       .where("created", ">=", Timestamp.fromDate(from))
       .where("created", "<", Timestamp.fromDate(to))
       .orderBy("created", "asc")
       .get();
-    if (viewHistoryDocs.empty) {
-      return {};
-    }
     const docIdAndData: Record<string, ViewHistory> =
       viewHistoryDocs.docs.reduce(
         (acc, doc) => {
@@ -197,20 +198,26 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
         },
         {} as Record<string, ViewHistory>,
       );
-    return docIdAndData;
+    return {
+      docIdAndData: docIdAndData,
+      docRefs: viewHistoryDocs.docs.map((doc) => doc.ref),
+    };
   }
 
-  // public async deleteViewHistries(
-  //   videoDocId: string,
-  //   viewHistoryDocIds: string[],
-  // ) {
-  //   const maxTryAtOnce = BATCH_SIZE;
-  //   const batch = this.firestore.batch();
-  //   const counter = 0;
-  //   for (const id of viewHistoryDocIds) {
-  //     batch.delete(id);
-  //   }
-  // }
+  public async deleteViewHistriesWithRefs(
+    viewHistoryDocRefs: DocumentReference[],
+  ) {
+    const promises: Promise<WriteResult[]>[] = [];
+    for (let i = 0; i < viewHistoryDocRefs.length; i += BATCH_SIZE) {
+      const batch = this.startBatch();
+      viewHistoryDocRefs.splice(i, i + BATCH_SIZE).forEach((ref) => {
+        batch.delete(ref);
+      });
+      promises.push(batch.commit());
+    }
+    logger.info(promises.length);
+    await Promise.all(promises);
+  }
 
   public async commitBatch(batch: WriteBatch): Promise<WriteResult[]> {
     return await super.commitBatch(batch);
