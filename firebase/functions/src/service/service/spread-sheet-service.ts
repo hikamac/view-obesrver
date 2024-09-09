@@ -73,17 +73,15 @@ export class SpreadSheetService {
 
     logger.info(`sheet "${sheetInfo.sheetTitle}" was created.`);
 
-    if (!sheetInfo.rows.every((ci) => ci.header !== null)) {
-      const headerValues = sheetInfo.rows.map((ci) => ci.header);
+    if (sheetInfo.header !== null) {
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: sheetInfo.spreadSheetId,
-        range: `${sheetInfo.sheetTitle}!B1:C1`,
+        range: `${sheetInfo.sheetTitle}!A1`,
         valueInputOption: "RAW",
         requestBody: {
-          values: [headerValues],
+          values: [sheetInfo.header as string[]],
         },
       });
-      logger.info(`header ${headerValues} was inserted.`);
     }
   }
 
@@ -112,11 +110,11 @@ export class SpreadSheetService {
 
     await this.sheets.spreadsheets.values.append({
       spreadsheetId: sheetInfo.spreadSheetId,
-      range: `${sheetInfo.sheetTitle}!A2`,
+      range: `${sheetInfo.sheetTitle}!A1`,
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
       requestBody: {
-        values: sheetInfo.rows.map((rows) => rows.values),
+        values: sheetInfo.table.map((row) => row.cells),
       },
     });
   }
@@ -137,10 +135,10 @@ export class SpreadSheetService {
 export interface SheetInfo {
   spreadSheetId: string;
   sheetTitle: string;
-  rows: ColumnInfo<unknown>[];
+  header?: string[];
+  table: RowInfo[];
 }
 
-export interface ColumnInfo<T> {
-  header?: string;
-  values: T[];
+export interface RowInfo {
+  cells: unknown[];
 }

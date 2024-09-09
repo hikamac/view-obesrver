@@ -29,7 +29,7 @@ export class ExportSpreadSheetUseCase {
   public async exportLastMonthViewHistoryDocs(
     searchFromDaysAgo?: number,
     searchToDaysAgo?: number,
-  ): Promise<void> {
+  ): Promise<string> {
     const searchSince: Date = getDateNDaysAgo(searchFromDaysAgo ?? 35);
     const searchUntil: Date = getDateNDaysAgo(searchToDaysAgo ?? 30);
     searchUntil.setTime(searchUntil.getTime() - 1);
@@ -55,8 +55,10 @@ export class ExportSpreadSheetUseCase {
 
       logger.info(`[${searchSince}] - [${searchUntil}] data were exported.`);
       await this.videoRepo.deleteViewHistriesWithRefs(target.refs);
+      return `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
     } catch (err) {
       logger.error(err);
+      throw err;
     }
   }
 
@@ -102,32 +104,44 @@ export class ExportSpreadSheetUseCase {
     spreadSheetId: string,
     aggregatedInfos: AggregatedInfo[],
   ): Promise<void> {
-    logger.info(`https://docs.google.com/spreadsheets/d/${spreadSheetId}`);
-
     for (const ai of aggregatedInfos) {
-      const createdList: string[] = ai.viewHistories.map((vh) => {
-        const createdDate = (vh.created as Timestamp).toDate();
-        const createdYMD = formatDateIntoYMDWithSlash(createdDate);
-        const createdHM = formatDateIntoHMSWithColon(createdDate).slice(
-          0,
-          -":00".length,
-        );
-        return `${createdYMD} ${createdHM}`;
-      });
-
       const sheetInfo: SheetInfo = {
         spreadSheetId: spreadSheetId,
         sheetTitle: ai.videoId,
-        rows: [
-          {values: createdList, header: "created"},
-          {
-            values: ai.viewHistories.map((vh) => vh.viewCount),
-            header: "viewCount",
-          },
+        header: [
+          "created(UTC+9)",
+          "view count",
+          "weekly created(UTC+9)",
+          "weekly view count",
         ],
+        table: ai.viewHistories.map((vh) => {
+          const createdDate = (vh.created as Timestamp).toDate();
+          const createdYMD = formatDateIntoYMDWithSlash(createdDate);
+          const createdHM = formatDateIntoHMSWithColon(createdDate).slice(
+            0,
+            -":00".length,
+          );
+          const created = `${createdYMD} ${createdHM}`;
+          return {
+            cells: [
+              created,
+              vh.viewCount,
+              this.isWeeklyHead(createdDate) ? created : null,
+              this.isWeeklyHead(createdDate) ? vh.viewCount : null,
+            ],
+          };
+        }),
       };
       await this.spreadSheetService.writeDataToSheet(sheetInfo);
     }
+  }
+
+  private isWeeklyHead(created: Date): boolean {
+    return (
+      created.getDay() === 0 &&
+      created.getHours() == 0 &&
+      created.getMinutes() === 0
+    );
   }
 }
 

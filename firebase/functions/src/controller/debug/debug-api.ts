@@ -129,7 +129,12 @@ export const exportSpreadSheetD = functions
       if (from < 0) {
         await exportSpreadSheetUseCase.deleteAllSpreadSheetD();
       } else {
-        await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(from, to);
+        const url =
+          await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(
+            from,
+            to,
+          );
+        logger.info(`URL: ${url}`);
       }
       res.status(200).send();
     } catch (err) {
