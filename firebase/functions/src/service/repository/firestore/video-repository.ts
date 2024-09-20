@@ -190,18 +190,31 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       .where("created", "<", Timestamp.fromDate(to))
       .orderBy("created", "asc")
       .get();
-    const docIdAndData: Record<string, ViewHistory> =
-      viewHistoryDocs.docs.reduce(
-        (acc, doc) => {
-          acc[doc.id] = doc.data();
-          return acc;
-        },
-        {} as Record<string, ViewHistory>,
-      );
+    const filteredDocs = viewHistoryDocs.docs.filter((doc) =>
+      this.canAlternateWithUpdated(doc),
+    );
+    const docIdAndData: Record<string, ViewHistory> = filteredDocs.reduce(
+      (acc, doc) => {
+        acc[doc.id] = doc.data();
+        return acc;
+      },
+      {} as Record<string, ViewHistory>,
+    );
     return {
       docIdAndData: docIdAndData,
-      docRefs: viewHistoryDocs.docs.map((doc) => doc.ref),
+      docRefs: filteredDocs.map((doc) => doc.ref),
     };
+  }
+
+  public async getOldestViewHistory(
+    videoDocId: string,
+  ): Promise<ViewHistory | undefined> {
+    const viewHistoryDocs = await this.viewHistoryRef(videoDocId)
+      .orderBy("created", "desc")
+      .limit(1)
+      .get();
+
+    return viewHistoryDocs.docs.map((doc) => doc.data()).find(() => true);
   }
 
   public async deleteViewHistriesWithRefs(
@@ -232,5 +245,34 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
   private viewHistoryRef(videoDocId: string): CollectionReference<ViewHistory> {
     const vhRef = this.videoRef().doc(videoDocId);
     return super.getSubCollection<ViewHistory>(vhRef, SUB_COLLECTION_NAME);
+  }
+
+  private canAlternateWithUpdated(
+    viewHistoryDoc: FirebaseFirestore.QueryDocumentSnapshot<ViewHistory>,
+  ): boolean {
+    if (
+      !viewHistoryDoc.data().created ||
+      this.isEmptyMap(viewHistoryDoc.data().created)
+    ) {
+      // when `created` field is missing or its value is `{}`.
+      if (viewHistoryDoc.data().updated) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    return viewHistoryDoc.data().created instanceof Timestamp;
+  }
+
+  private isEmptyMap(
+    created: Timestamp | FieldValue | object | undefined,
+  ): boolean {
+    if (typeof created === "object") {
+      if (Object.keys(created).length === 0) {
+        return true;
+      }
+    }
+    return false;
   }
 }

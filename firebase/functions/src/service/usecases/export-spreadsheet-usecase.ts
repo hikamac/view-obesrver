@@ -80,6 +80,8 @@ export class ExportSpreadSheetUseCase {
     let vhDocIds: string[] = [];
     const refs: DocumentReference[] = [];
     for (const videoDocId of videoDocIds) {
+      const oldest = await this.videoRepo.getOldestViewHistory(videoDocId);
+      logger.info(oldest);
       const target = await this.videoRepo.getViewHistoriesBetween(
         videoDocId,
         searchSince,
