@@ -3,9 +3,7 @@ import * as functions from "firebase-functions";
 import {firestoreRegion} from "../../constant/setting-value";
 import {defineString} from "firebase-functions/params";
 import {SecretManager} from "../../service/secret-manager";
-// prettier-ignore
-import {ExportSpreadSheetUseCase}
-  from "../../service/usecases/export-spreadsheet-usecase";
+import {ExportSpreadSheetUseCase} from "../../service/usecases/export-spreadsheet-usecase";
 import {json} from "../../type/types";
 
 /**
@@ -31,14 +29,14 @@ export const exportSpreadSheet = functions
  * Export documents in "view-history" subcollection
  * more rapidly to catch up the ordinal cycle.
  *
- * FREQ: per 2 days.
+ * FREQ: everyday.
  *
  * R: videoDocs * 6 * 24 * 4 + 1
  * D: videoDocs * 6 * 24 * 4
  */
 export const exportSpreadSheetBoost = functions
   .region(firestoreRegion)
-  .pubsub.schedule("0, 2, 1, *, *")
+  .pubsub.schedule("every days")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
     logger.info("export spread sheet boost batch started.");
@@ -60,6 +58,12 @@ const exportToSpreadSheet = async (
   );
 
   try {
+    if (!fromDaysAgo || !toDaysAgo) {
+      const range = await exportSpreadSheetUseCase.getTargetRange();
+      fromDaysAgo = range.from;
+      toDaysAgo = range.to;
+    }
+
     await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(
       fromDaysAgo,
       toDaysAgo,

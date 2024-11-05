@@ -206,15 +206,15 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
     };
   }
 
-  public async getOldestViewHistory(
-    videoDocId: string,
-  ): Promise<ViewHistory | undefined> {
-    const viewHistoryDocs = await this.viewHistoryRef(videoDocId)
-      .orderBy("created", "desc")
+  public async getOldestViewHistory(): Promise<ViewHistory | undefined> {
+    const viewHistoryCollection =
+      this.firestore.collectionGroup(SUB_COLLECTION_NAME);
+    const docs = await viewHistoryCollection
+      .orderBy("created", "asc")
       .limit(1)
       .get();
 
-    return viewHistoryDocs.docs.map((doc) => doc.data()).find(() => true);
+    return docs.docs.map((doc) => new ViewHistory(doc.data()))[0];
   }
 
   public async deleteViewHistriesWithRefs(

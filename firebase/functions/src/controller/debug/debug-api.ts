@@ -123,20 +123,42 @@ export const exportSpreadSheetD = functions
       googleSheetApiKeyJson,
       email,
     );
-    const from = Number(req.query.from);
-    const to = Number(req.query.to);
+    let from = Number(req.query.from);
+    let to = Number(req.query.to);
     try {
-      if (from < 0) {
-        await exportSpreadSheetUseCase.deleteAllSpreadSheetD();
-      } else {
-        const url =
-          await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(
-            from,
-            to,
-          );
-        logger.info(`URL: ${url}`);
+      if (!from || !to) {
+        const range = await exportSpreadSheetUseCase.getTargetRange();
+        from = range.from;
+        to = range.to;
       }
+      const url = await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(
+        from,
+        to,
+      );
+      logger.info(`URL: ${url}`);
+
       res.status(200).send();
+    } catch (err) {
+      logger.error(err);
+      res.status(500).send();
+    }
+  });
+
+export const deleteAllSpreadSheets = functions
+  .region(firestoreRegion)
+  .runWith({timeoutSeconds: 540})
+  .https.onRequest(async (req, res) => {
+    const envVarsName = defineString("ENV_NAME").value();
+    const email = defineString("EMAIL").value();
+    const env = await SecretManager.setUpAsync(envVarsName);
+    const googleSheetApiKeyJson = env.get<json>("GOOGLE_SHEET_API_KEY_JSON");
+    const exportSpreadSheetUseCase = new ExportSpreadSheetUseCase(
+      googleSheetApiKeyJson,
+      email,
+    );
+    try {
+      await exportSpreadSheetUseCase.deleteAllSpreadSheetD();
+      res.status(200).send("all sheets are deleted.");
     } catch (err) {
       logger.error(err);
       res.status(500).send();

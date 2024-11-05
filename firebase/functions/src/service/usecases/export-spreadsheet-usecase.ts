@@ -3,6 +3,7 @@ import * as logger from "firebase-functions/logger";
 import {VideoRepository} from "../repository/firestore/video-repository";
 import {VideoDocument, ViewHistory} from "../../model/firestore/video-document";
 import {
+  calculateDateDifference,
   formatDateIntoHMSWithColon,
   formatDateIntoYMDWithSlash,
   getDateNDaysAgo,
@@ -10,15 +11,21 @@ import {
 import {DocumentReference, Timestamp} from "firebase-admin/firestore";
 import {json} from "../../type/types";
 import {SheetInfo, SpreadSheetService} from "../service/spread-sheet-service";
+import {
+  ExportHistoryDocument,
+  ExportHistoryRepository,
+} from "../repository/firestore/export-history-repository";
 
 export class ExportSpreadSheetUseCase {
   private videoRepo: VideoRepository;
+  private exportHistoryRepo: ExportHistoryRepository;
   private spreadSheetService: SpreadSheetService;
   private email: string;
 
   constructor(apiKeyJson: json, email: string) {
     const firestore = admin.firestore();
     this.videoRepo = new VideoRepository(firestore);
+    this.exportHistoryRepo = new ExportHistoryRepository(firestore);
     this.spreadSheetService = new SpreadSheetService(
       apiKeyJson.client_email as string,
       apiKeyJson.private_key as string,
@@ -69,6 +76,35 @@ export class ExportSpreadSheetUseCase {
     }
   }
 
+  public async getTargetRange(): Promise<{from: number; to: number}> {
+    const exportHistoryDoc = await this.exportHistoryRepo.getExportHistory();
+    console.log("%o", exportHistoryDoc);
+    let from: number = 0;
+    if (exportHistoryDoc !== null) {
+      from = exportHistoryDoc?.untilXdaysAgo;
+    } else {
+      const oldestDocument = await this.findOldestViewHistoryDocDate();
+      console.log("%o", oldestDocument);
+      from = calculateDateDifference(new Date(), oldestDocument);
+    }
+    const to = Math.max(from - 5, 0);
+
+    console.log("%d - %d", from, to);
+
+    await this.exportHistoryRepo.setExportHistory(
+      new ExportHistoryDocument({untilXdaysAgo: to}),
+    );
+    return {from: from, to: Math.max(from - 5, 0)};
+  }
+
+  private async findOldestViewHistoryDocDate(): Promise<Date> {
+    const oldest = await this.videoRepo.getOldestViewHistory();
+    if (oldest?.created instanceof Timestamp) {
+      return oldest.created.toDate();
+    }
+    return new Date("2023-10-23");
+  }
+
   private async findViewHistoriesBetween(
     searchSince: Date,
     searchUntil: Date,
@@ -80,8 +116,6 @@ export class ExportSpreadSheetUseCase {
     let vhDocIds: string[] = [];
     const refs: DocumentReference[] = [];
     for (const videoDocId of videoDocIds) {
-      const oldest = await this.videoRepo.getOldestViewHistory(videoDocId);
-      logger.info(oldest);
       const target = await this.videoRepo.getViewHistoriesBetween(
         videoDocId,
         searchSince,
