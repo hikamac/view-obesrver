@@ -67,3 +67,5 @@ node_modules/
 
 # resource files
 resource/*
+resource*/*
+backup/*
