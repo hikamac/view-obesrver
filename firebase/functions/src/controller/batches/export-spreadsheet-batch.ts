@@ -36,7 +36,7 @@ export const exportSpreadSheet = functions
  */
 export const exportSpreadSheetBoost = functions
   .region(firestoreRegion)
-  .pubsub.schedule("every days")
+  .pubsub.schedule("every day 04:00")
   .timeZone("Asia/Tokyo")
   .onRun(async () => {
     logger.info("export spread sheet boost batch started.");
