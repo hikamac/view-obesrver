@@ -26,9 +26,9 @@ export const calculateRestDaysFor = (aniversaryDate: Date): number => {
 /**
  * culculate how many date are different
  *
- * @param date1
- * @param date2
- * @returns {number} absolute number of the diff date
+ * @param {Date} date1
+ * @param {Date} date2
+ * @return {number} absolute number of the diff date
  */
 export const calculateDateDifference = (date1: Date, date2: Date) => {
   const diff = Math.abs(date1.getTime() - date2.getTime());
