@@ -14,6 +14,7 @@ export class SecretManager {
     secretVersion = "latest",
   ): Promise<SecretManager> {
     logger.info("setUpAsync");
+    logger.info(`secretName: ${secretName}, secretVer: ${secretVersion}`);
     const client = new SecretManagerServiceClient();
     const name = client.secretVersionPath(
       "observe-notify",
