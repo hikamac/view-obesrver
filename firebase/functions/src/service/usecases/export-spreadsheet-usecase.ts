@@ -77,8 +77,9 @@ export class ExportSpreadSheetUseCase {
   }
 
   public async getTargetRange(): Promise<{from: number; to: number}> {
+    logger.log("getTargetRange");
     const exportHistoryDoc = await this.exportHistoryRepo.getExportHistory();
-    console.log("%o", exportHistoryDoc);
+    logger.log("%o", exportHistoryDoc);
     let from = 0;
     if (exportHistoryDoc !== null) {
       from = exportHistoryDoc?.untilXdaysAgo;
