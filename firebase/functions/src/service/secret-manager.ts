@@ -23,7 +23,7 @@ export class SecretManager {
     if (payload === undefined) {
       throw new Error("cannot set up secret manager");
     }
-    const json = JSON.parse(payload) as {[key: string]: string | string[]};
+    const json = JSON.parse(payload) as json;
     return new SecretManager(json);
   }
 
