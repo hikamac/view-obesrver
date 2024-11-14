@@ -1,5 +1,6 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 import {json} from "../type/types";
+import {logger} from "firebase-functions/v1";
 
 export class SecretManager {
   private json: json;
@@ -23,8 +24,20 @@ export class SecretManager {
     if (payload === undefined) {
       throw new Error("cannot set up secret manager");
     }
-    const json = JSON.parse(payload) as json;
-    return new SecretManager(json);
+    try {
+      const json = JSON.parse(payload) as json;
+      return new SecretManager(json);
+    } catch (e) {
+      logger.error(e);
+      logger.error(`not json formatted payload: ${payload}`);
+      try {
+        return new SecretManager(JSON.parse(payload));
+      } catch (ex) {
+        logger.error(ex);
+        logger.error(`not object payload: ${payload}`);
+        return new SecretManager(JSON.parse(payload.toString()));
+      }
+    }
   }
 
   public get<T>(name: string): T {
