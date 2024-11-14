@@ -19,8 +19,10 @@ export class SecretManager {
       secretName,
       secretVersion,
     );
+    logger.info(`name: ${name}`);
     const [version] = await client.accessSecretVersion({name: name});
     const payload = version.payload?.data?.toString();
+    logger.info(`payload: ${payload}`);
     if (payload === undefined) {
       throw new Error("cannot set up secret manager");
     }
