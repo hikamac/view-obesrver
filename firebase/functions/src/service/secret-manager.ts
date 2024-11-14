@@ -1,6 +1,5 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 import {json} from "../type/types";
-import * as logger from "firebase-functions/logger";
 
 export class SecretManager {
   private json: json;
