@@ -51,9 +51,9 @@ const exportToSpreadSheet = async (
   const envVarsName = defineString("ENV_NAME").value();
   const email = defineString("EMAIL").value();
   const env = await SecretManager.setUpAsync(envVarsName);
-  const googleSheetApiKeyJson = env.get<json>("GOOGLE_SHEET_API_KEY_JSON");
+  const googleSheetApiKeyJson = env.get<string>("GOOGLE_SHEET_API_KEY_JSON");
   const exportSpreadSheetUseCase = new ExportSpreadSheetUseCase(
-    googleSheetApiKeyJson,
+    JSON.parse(googleSheetApiKeyJson) as json,
     email,
   );
 
