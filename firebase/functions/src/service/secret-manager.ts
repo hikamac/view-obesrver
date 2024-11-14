@@ -1,6 +1,6 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
 import {json} from "../type/types";
-import {logger} from "firebase-functions/v1";
+import * as logger from "firebase-functions/logger";
 
 export class SecretManager {
   private json: json;
@@ -13,6 +13,7 @@ export class SecretManager {
     secretName: string,
     secretVersion = "latest",
   ): Promise<SecretManager> {
+    logger.info("setUpAsync");
     const client = new SecretManagerServiceClient();
     const name = client.secretVersionPath(
       "observe-notify",
