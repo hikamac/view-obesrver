@@ -13,7 +13,7 @@ import {
   ViewHistory,
   VideoDocument,
 } from "../../../model/firestore/video-document";
-import {logger} from "firebase-functions/v1";
+import * as logger from "firebase-functions/logger";
 
 const COLLECTION_NAME = "video";
 const SUB_COLLECTION_NAME = "view-history";
@@ -209,10 +209,16 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
   public async getOldestViewHistory(): Promise<ViewHistory | undefined> {
     const viewHistoryCollection =
       this.firestore.collectionGroup(SUB_COLLECTION_NAME);
-    const docs = await viewHistoryCollection
+    const docsRef = await viewHistoryCollection
       .orderBy("created", "asc")
-      .limit(1)
-      .get();
+      .limit(1);
+    logger.info("%o", docsRef);
+    const docs = await docsRef.get();
+    logger.info("%o", docs);
+
+    if (docs.empty) {
+      return undefined;
+    }
 
     return docs.docs.map((doc) => new ViewHistory(doc.data()))[0];
   }

@@ -77,20 +77,20 @@ export class ExportSpreadSheetUseCase {
   }
 
   public async getTargetRange(): Promise<{from: number; to: number}> {
-    logger.log("getTargetRange");
+    logger.info("getTargetRange");
     const exportHistoryDoc = await this.exportHistoryRepo.getExportHistory();
-    logger.log("%o", exportHistoryDoc);
+    logger.info("%o", exportHistoryDoc);
     let from = 0;
     if (exportHistoryDoc !== null) {
       from = exportHistoryDoc?.untilXdaysAgo;
     } else {
       const oldestDocument = await this.findOldestViewHistoryDocDate();
-      console.log("%o", oldestDocument);
+      logger.info("%o", oldestDocument);
       from = calculateDateDifference(new Date(), oldestDocument);
     }
     const to = Math.max(from - 5, 0);
 
-    console.log("%d - %d", from, to);
+    logger.log("%d - %d", from, to);
 
     await this.exportHistoryRepo.setExportHistory(
       new ExportHistoryDocument({untilXdaysAgo: to}),
