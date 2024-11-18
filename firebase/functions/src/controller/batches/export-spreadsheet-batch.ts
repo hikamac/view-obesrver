@@ -51,7 +51,6 @@ const exportToSpreadSheet = async (
   const envVarsName = defineString("ENV_NAME").value();
   const email = defineString("EMAIL").value();
   const env = await SecretManager.setUpAsync(envVarsName);
-  logger.info(`env: ${env}`);
   const googleSheetApiKeyJson = env.get<json>("GOOGLE_SHEET_API_KEY_JSON");
   const exportSpreadSheetUseCase = new ExportSpreadSheetUseCase(
     googleSheetApiKeyJson,
@@ -65,10 +64,11 @@ const exportToSpreadSheet = async (
       toDaysAgo = range.to;
     }
 
-    await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(
+    const url = await exportSpreadSheetUseCase.exportLastMonthViewHistoryDocs(
       fromDaysAgo,
       toDaysAgo,
     );
+    logger.info(`sheet url: ${url}`);
   } catch (err) {
     logger.error(err);
     throw err;

@@ -1,5 +1,5 @@
 import {google} from "googleapis";
-import {logger} from "firebase-functions/v1";
+import * as logger from "firebase-functions/logger";
 
 export class SpreadSheetService {
   private sheets;
@@ -71,7 +71,9 @@ export class SpreadSheetService {
       },
     });
 
-    logger.info(`sheet "${sheetInfo.sheetTitle}" was created.`);
+    logger.info(
+      `[createSpreadSheet] sheet "${sheetInfo.sheetTitle}" was created.`,
+    );
 
     if (sheetInfo.header !== null) {
       await this.sheets.spreadsheets.values.update({
@@ -95,7 +97,6 @@ export class SpreadSheetService {
     const sheetExists = metadata.data.sheets?.some(
       (sheet) => sheet.properties?.title === sheetName,
     );
-    logger.info(sheetExists);
     return sheetExists !== undefined && sheetExists !== false;
   }
 
@@ -128,7 +129,7 @@ export class SpreadSheetService {
 
   public async deleteSpreadSheet(spreadSheetId: string) {
     await this.drive.files.delete({fileId: spreadSheetId});
-    logger.info(`Sheet [${spreadSheetId}] was deleted.`);
+    logger.info(`[deleteSpreadSheet] Sheet [${spreadSheetId}] was deleted.`);
   }
 }
 

@@ -234,7 +234,6 @@ export class VideoRepository extends FirestoreRepository<VideoDocument> {
       });
       promises.push(batch.commit());
     }
-    logger.info(promises.length);
     await Promise.all(promises);
   }
 

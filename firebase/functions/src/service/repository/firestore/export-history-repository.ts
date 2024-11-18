@@ -1,7 +1,6 @@
 import {Firestore} from "firebase-admin/firestore";
 import {DocumentModel} from "../../../model/firestore/document-model";
 import {FirestoreRepository} from "./firestore-repository";
-import * as logger from "firebase-functions/logger";
 
 export class ExportHistoryDocument extends DocumentModel {
   public untilXdaysAgo!: number;
@@ -22,9 +21,7 @@ export class ExportHistoryRepository extends FirestoreRepository<ExportHistoryDo
     const docRef = super
       .getCollection<ExportHistoryDocument>()
       .doc("milestone");
-    logger.info(`docRef: ${docRef}`);
     const doc = await docRef.get();
-    logger.info(`doc: ${doc}`);
     if (doc.exists) {
       return doc.data() as ExportHistoryDocument;
     } else {
