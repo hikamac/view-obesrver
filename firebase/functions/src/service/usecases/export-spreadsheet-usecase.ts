@@ -95,6 +95,17 @@ export class ExportSpreadSheetUseCase {
     return {from: from, to: Math.max(from - 5, 0)};
   }
 
+  public async shareAsEditor(): Promise<void> {
+    const list = await this.spreadSheetService.list();
+    let spreadSheetId = "";
+    if (list.length > 0) {
+      spreadSheetId = list[0].id;
+    } else {
+      throw new Error("no sheet found.");
+    }
+    await this.spreadSheetService.shareSpreadSheet(spreadSheetId, this.email);
+  }
+
   private async findOldestViewHistoryDocDate(): Promise<Date> {
     const oldest = await this.videoRepo.getOldestViewHistory();
     if (oldest?.created instanceof Timestamp) {
