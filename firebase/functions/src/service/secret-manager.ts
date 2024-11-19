@@ -1,9 +1,10 @@
 import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
+import {json} from "../type/types";
 
 export class SecretManager {
-  private json: {[key: string]: string | string[]};
+  private json: json;
 
-  private constructor(json: {[key: string]: string | string[]}) {
+  private constructor(json: json) {
     this.json = json;
   }
 
@@ -22,7 +23,7 @@ export class SecretManager {
     if (payload === undefined) {
       throw new Error("cannot set up secret manager");
     }
-    const json = JSON.parse(payload) as {[key: string]: string | string[]};
+    const json = JSON.parse(payload) as json;
     return new SecretManager(json);
   }
 
