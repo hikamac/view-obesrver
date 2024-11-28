@@ -1,3 +1,4 @@
+import 'package:view_observer/views/pages/about_page.dart';
 import 'package:view_observer/views/pages/page_widget.dart';
 import 'package:view_observer/views/pages/sns_links_page.dart';
 import 'package:view_observer/views/pages/top_page.dart';
@@ -27,6 +28,14 @@ class SNSLinksPagePath extends RoutePath {
 
   @override
   PageWidget<Template> get pageWidget => const SNSLinksPage();
+}
+
+class AboutPagePath extends RoutePath {
+  @override
+  String get path => "/about";
+
+  @override
+  PageWidget<Template> get pageWidget => const AboutPage();
 }
 
 class UnknownPath extends RoutePath {

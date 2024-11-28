@@ -29,7 +29,18 @@ class SideBar extends ConsumerWidget {
           ListTile(
             title: const Text("SNS Links Page"),
             onTap: () {
-              ref.read(navigationStateProvider.notifier).setPath(SNSLinksPagePath());
+              ref
+                  .read(navigationStateProvider.notifier)
+                  .setPath(SNSLinksPagePath());
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: const Text("About Page"),
+            onTap: () {
+              ref
+                  .read(navigationStateProvider.notifier)
+                  .setPath(AboutPagePath());
               Navigator.pop(context);
             },
           ),
