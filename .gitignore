@@ -51,5 +51,8 @@ app.*.map.json
 **/env/env.g.dart
 firebase/.env.json
 
+# personal documents
+.docs
+
 # mock
 lib/apis/functions/mock.dart
