@@ -69,6 +69,17 @@ class NewsDocument {
     return null;
   }
 
+  String? getFormattedPubDate() {
+    DateTime? publishedAt = getPublishedAt();
+    if (publishedAt != null) {
+      int year = publishedAt.year;
+      int month = publishedAt.month;
+      int date = publishedAt.day;
+      return "$year/$month/$date";
+    }
+    return null;
+  }
+
   int? getRestDays() {
     if (properties != null) {
       return properties?["restDays"];

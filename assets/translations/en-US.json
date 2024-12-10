@@ -1,0 +1,8 @@
+{
+  "news":
+  {
+    "viewCountApproach": "{video} is almost at {count} views!",
+    "viewCountReached": "{video} has hit over {count} views!",
+    "anniversary": "{date} is the anniversary of {video}!"
+  }
+}

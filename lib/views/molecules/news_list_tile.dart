@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:view_observer/apis/models/news.dart';
 
 class NewsListTile extends StatelessWidget {
@@ -13,24 +13,32 @@ class NewsListTile extends StatelessWidget {
     switch (news.category) {
       case NewsCategory.viewCountApproach:
         iconData = Icons.trending_up;
-        title = "${news.videoTitle} is almost at ${news.getMilestone()} views!";
+        title = "news.viewCountApproach".tr(namedArgs: {
+          "video": news.videoTitle,
+          "count": "${news.getMilestone()}"
+        });
       case NewsCategory.viewCountReached:
         iconData = Icons.celebration;
-        title = "${news.videoTitle} has hit over ${news.getMilestone()} views!";
+        title = "news.viewCountReached".tr(namedArgs: {
+          "video": news.videoTitle,
+          "count": "${news.getMilestone()}"
+        });
       case NewsCategory.anniversary:
         iconData = Icons.cake;
-        String formatted = DateFormat("MM/dd").format(news.getPublishedAt()!);
-        title = "$formatted is the anniversary of ${news.videoTitle}!";
+        title = "news.anniversary".tr(namedArgs: {
+          "video": news.videoTitle,
+          "date": news.getFormattedPubDate()!,
+        });
       default:
         return const ListTile(
           leading: Icon(Icons.info_outline),
         );
     }
-    
+
     return ListTile(
-          leading: Icon(iconData),
-          title: Text(title),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+      leading: Icon(iconData),
+      title: Text(title),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
     );
   }
 }

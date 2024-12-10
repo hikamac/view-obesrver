@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,6 @@ import 'package:view_observer/router/route_parser.dart';
 import 'package:view_observer/router/router_delegator.dart';
 import 'package:view_observer/views/pages/top_page.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -16,7 +16,13 @@ void main() async {
   );
   await setUpSharedPreference();
   usePathUrlStrategy();
-  runApp(ProviderScope(child: MyApp()));
+
+  await EasyLocalization.ensureInitialized();
+  runApp(EasyLocalization(
+      supportedLocales: const [Locale("en", "US"), Locale("ja", "JP")],
+      path: 'assets/translations',
+      fallbackLocale: const Locale("ja", "JP"),
+      child: ProviderScope(child: MyApp())));
 }
 
 class MyApp extends ConsumerWidget {
@@ -33,6 +39,9 @@ class MyApp extends ConsumerWidget {
       ),
       routerDelegate: RouterDelegator(ref),
       routeInformationParser: _routeParser,
+      locale: context.locale,
+      supportedLocales: context.supportedLocales,
+      localizationsDelegates: context.localizationDelegates,
     );
   }
 }
