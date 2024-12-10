@@ -1,4 +1,7 @@
 {
+  "common": {
+    "pageTitle": "Marpril Channel Observatory"
+  },
   "news":
   {
     "viewCountApproach": "{video} is almost at {count} views!",

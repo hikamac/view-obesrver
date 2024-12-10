@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:view_observer/views/organisms/app_bar.dart';
 import 'package:view_observer/views/organisms/side_bar.dart';
@@ -9,7 +10,9 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const MyAppBar(),
+      appBar: MyAppBar(
+        title: tr("common.pageTitle"),
+      ),
       body: child,
       drawer: const SideBar(),
     );

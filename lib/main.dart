@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:view_observer/apis/local_storage.dart';
+import 'package:view_observer/constants/locales.dart';
 import 'package:view_observer/firebase_options.dart';
+import 'package:view_observer/providers/locale_provider.dart';
 import 'package:view_observer/router/route_parser.dart';
 import 'package:view_observer/router/router_delegator.dart';
 import 'package:view_observer/views/pages/top_page.dart';
@@ -19,7 +21,7 @@ void main() async {
 
   await EasyLocalization.ensureInitialized();
   runApp(EasyLocalization(
-      supportedLocales: const [Locale("en", "US"), Locale("ja", "JP")],
+      supportedLocales: supportedLocales,
       path: 'assets/translations',
       fallbackLocale: const Locale("ja", "JP"),
       child: ProviderScope(child: MyApp())));
@@ -31,15 +33,17 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp.router(
-      title: 'Flutter Demo',
+      title: tr("common.pageTitle"),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       routerDelegate: RouterDelegator(ref),
       routeInformationParser: _routeParser,
-      locale: context.locale,
+      locale: locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
     );

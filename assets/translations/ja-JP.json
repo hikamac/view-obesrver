@@ -1,4 +1,7 @@
 {
+  "common": {
+    "pageTitle": "Marpril Channel観測所"
+  },
   "news":
   {
     "viewCountApproach": "{video} がもうすぐ{count}再生です！",
