@@ -1,11 +1,23 @@
 {
-  "common": {
-    "pageTitle": "Marpril Channel観測所"
+  "common": 
+  {
+    "siteTitle": "Marpril Channel観測所"
   },
   "news":
   {
+    "pageTitle": "News",
     "viewCountApproach": "{video} がもうすぐ{count}再生です！",
     "viewCountReached": "{video} が{count}再生を達成しました！",
     "anniversary": "{date}は {video} の投稿記念日です！"
+  },
+  "snsLink": 
+  {
+    "pageTitle": "サーチ用リンク集",
+    "x": "X（旧Twitter）",
+    "note": "note"
+  },
+  "about":
+  {
+    "pageTitle": "このサイトについて"
   }
 }

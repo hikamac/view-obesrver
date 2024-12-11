@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/constants/color.dart';
@@ -20,14 +21,14 @@ class SideBar extends ConsumerWidget {
             ),
           ),
           ListTile(
-            title: const Text("Top Page"),
+            title: const Text("news.pageTitle").tr(),
             onTap: () {
               ref.read(navigationStateProvider.notifier).setPath(TopPagePath());
               Navigator.pop(context);
             },
           ),
           ListTile(
-            title: const Text("SNS Links Page"),
+            title: const Text("snsLink.pageTitle").tr(),
             onTap: () {
               ref
                   .read(navigationStateProvider.notifier)
@@ -36,7 +37,7 @@ class SideBar extends ConsumerWidget {
             },
           ),
           ListTile(
-            title: const Text("About Page"),
+            title: const Text("about.pageTitle").tr(),
             onTap: () {
               ref
                   .read(navigationStateProvider.notifier)

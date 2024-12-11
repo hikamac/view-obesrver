@@ -11,7 +11,7 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: MyAppBar(
-        title: tr("common.pageTitle"),
+        title: tr("common.siteTitle"),
       ),
       body: child,
       drawer: const SideBar(),

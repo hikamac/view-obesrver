@@ -6,8 +6,8 @@ import 'package:view_observer/constants/locales.dart';
 class LocaleNotifier extends StateNotifier<Locale> {
   LocaleNotifier() : super(supportedLocales[0]);
 
-  void changeLocale(BuildContext context, Locale locale) {
-    context.setLocale(locale);
+  void changeLocale(BuildContext context, Locale locale) async {
+    await context.setLocale(locale);
     state = locale;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:view_observer/views/organisms/sns_link_list.dart';
@@ -22,9 +23,9 @@ class SNSLinksTemplate extends Template {
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  'SNS Links',
+                  'snsLink.pageTitle',
                   style: Theme.of(context).textTheme.headlineMedium,
-                ),
+                ).tr(),
               ),
             ),
             SizedBox(
