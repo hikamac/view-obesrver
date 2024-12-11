@@ -12,7 +12,7 @@ class RouterDelegator extends RouterDelegate<RoutePath>
   RoutePath _currentPath;
   RouterDelegator(this.ref)
       : navigatorKey = GlobalKey<NavigatorState>(),
-        _currentPath = TopPagePath() {
+        _currentPath = ref.read(navigationStateProvider) {
     ref.listen<RoutePath>(navigationStateProvider, (_, newPath) {
       _currentPath = newPath;
       notifyListeners();
