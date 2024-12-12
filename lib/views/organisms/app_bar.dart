@@ -15,6 +15,7 @@ class MyAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: actions ??
           [
             const LangSwitchIcon(),
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 20.0))
           ],
     );
   }

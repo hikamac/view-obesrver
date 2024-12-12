@@ -18,6 +18,9 @@
   },
   "about":
   {
-    "pageTitle": "About this site"
+    "pageTitle": "About this site",
+    "intro1": " ",
+    "introBold": "",
+    "intro2": ""
   }
 }

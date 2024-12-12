@@ -23,7 +23,7 @@ void main() async {
   runApp(EasyLocalization(
       supportedLocales: supportedLocales,
       path: 'assets/translations',
-      fallbackLocale: const Locale("ja", "JP"),
+      fallbackLocale: supportedLocales[0],
       child: ProviderScope(child: MyApp())));
 }
 
