@@ -1,5 +1,5 @@
 {
-  "common": 
+  "common":
   {
     "siteTitle": "Marpril Channel観測所"
   },
@@ -10,7 +10,7 @@
     "viewCountReached": "{video} が{count}再生を達成しました！",
     "anniversary": "{date}は {video} の投稿記念日です！"
   },
-  "snsLink": 
+  "snsLink":
   {
     "pageTitle": "サーチ用リンク集",
     "x": "X（旧Twitter）",

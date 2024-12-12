@@ -4,7 +4,12 @@ import 'package:view_observer/apis/models/news.dart';
 
 class NewsListTile extends StatelessWidget {
   final NewsDocument news;
-  const NewsListTile({super.key, required this.news});
+  final bool isMobile;
+  const NewsListTile({
+    super.key,
+    this.isMobile = false,
+    required this.news,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,7 @@ class NewsListTile extends StatelessWidget {
     return ListTile(
       leading: Icon(iconData),
       title: Text(title),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+      contentPadding: EdgeInsets.symmetric(horizontal: isMobile ? 2.0 : 20.0),
     );
   }
 }

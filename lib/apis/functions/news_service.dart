@@ -10,19 +10,20 @@ class NewsService {
   NewsService(this._functions);
 
   Future<NewsListQueryResponse> fetchNews(
-      {int limit = 20, String? lastViewedId}) async {
+      {int limit = 20, String? lastViewedId, String? category}) async {
     const String name = "news";
-    final cachedJson = await loadCachedApiResultJson(name);
+    String key = "$name/$category";
+    final cachedJson = await loadCachedApiResultJson(key);
     if (cachedJson != null) {
       final Map<String, dynamic> decoded = json.decode(cachedJson);
       return NewsListQueryResponse.fromJson(decoded);
     }
 
     final callable = _functions.httpsCallable(name);
-    final response =
-        await callable.call({"limit": limit, "lastViewedId": lastViewedId});
+    final response = await callable.call(
+        {"limit": limit, "lastViewedId": lastViewedId, "category": category});
     final encoded = json.encode(response.data);
-    setApiResult(name, encoded);
+    setApiResult(key, encoded);
     return NewsListQueryResponse.fromJson(response.data);
   }
 }

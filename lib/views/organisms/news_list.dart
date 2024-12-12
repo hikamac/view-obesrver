@@ -9,8 +9,15 @@ import 'package:view_observer/views/molecules/youtube_player.dart';
 class NewsList extends ConsumerWidget {
   final limit = 10;
   final String? lastViewedId;
+  final String? category;
+  final bool isMobile;
 
-  const NewsList({super.key, this.lastViewedId});
+  const NewsList({
+    super.key,
+    this.lastViewedId,
+    this.category,
+    this.isMobile = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +31,8 @@ class NewsList extends ConsumerWidget {
         ),
       ),
       child: FutureBuilder(
-        future: newsService.fetchNews(limit: limit, lastViewedId: lastViewedId),
+        future: newsService.fetchNews(
+            limit: limit, lastViewedId: lastViewedId, category: category),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -37,7 +45,7 @@ class NewsList extends ConsumerWidget {
               itemBuilder: (_, index) {
                 final news = newsList[index];
                 return MyExpansionTile(
-                  title: NewsListTile(news: news),
+                  title: NewsListTile(isMobile: isMobile, news: news),
                   children: [
                     _getYouTubePlayer(news),
                   ],
