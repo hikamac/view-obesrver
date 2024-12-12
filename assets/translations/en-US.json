@@ -23,13 +23,20 @@
   {
     "pageTitle": "Links for Searching",
     "x": "X (formerly Twitter)",
+    "youtube": "YouTube",
+    "bluesky": "Bluesky",
     "note": "note"
   },
-  "about":
-  {
+  "about": {
     "pageTitle": "About this site",
-    "intro1": " ",
-    "introBold": "",
-    "intro2": ""
+    "intro": {
+      "1": " is a fan-made ",
+      "bold": "unofficial ",
+      "2": "website."
+    },
+    "updateHistory": "Update History",
+    "updateNote": {
+      "0": "2024/12/12 β version released"
+    }
   }
 }

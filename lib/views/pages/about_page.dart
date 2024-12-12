@@ -5,10 +5,11 @@ import 'package:view_observer/views/templates/about_template.dart';
 import 'package:view_observer/views/templates/template_widget.dart';
 
 class AboutPage extends PageWidget {
-  const AboutPage({super.key});
+  final bool dev;
+  const AboutPage({super.key, this.dev = false});
 
   @override
   Template build(BuildContext context, WidgetRef ref) {
-    return const AboutTemplate();
+    return AboutTemplate(dev: dev);
   }
 }

@@ -23,13 +23,23 @@
   {
     "pageTitle": "サーチ用リンク集",
     "x": "X（旧Twitter）",
+    "youtube": "YouTube",
+    "bluesky": "Bluesky",
     "note": "note"
   },
   "about":
   {
     "pageTitle": "このサイトについて",
-    "intro1": " ",
-    "introBold": "",
-    "intro2": ""
+    "intro":
+    {
+      "1": " はファンメイドの",
+      "bold": "非公式Webサイト",
+      "2": "です。"
+    },
+    "updateHistory": "更新履歴",
+    "updateNote":
+    {
+      "0": "2024/12/12 β版公開"
+    }
   }
 }

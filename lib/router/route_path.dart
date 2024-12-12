@@ -43,5 +43,5 @@ class UnknownPath extends RoutePath {
   String get path => "/404";
 
   @override
-  PageWidget<Template> get pageWidget => const TopPage();
+  PageWidget<Template> get pageWidget => const AboutPage(dev: true);
 }

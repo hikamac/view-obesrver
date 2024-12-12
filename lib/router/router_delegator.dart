@@ -57,6 +57,8 @@ class RouterDelegator extends RouterDelegate<RoutePath>
   void _onPopPage() {
     if (_currentPath is SNSLinksPagePath) {
       _currentPath = TopPagePath();
+    } else if (_currentPath is AboutPagePath) {
+      _currentPath = AboutPagePath();
     } else {
       _currentPath = TopPagePath();
     }

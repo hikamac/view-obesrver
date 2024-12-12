@@ -3,7 +3,8 @@ import 'package:view_observer/router/route_path.dart';
 
 class RouteInfoParser extends RouteInformationParser<RoutePath> {
   @override
-  Future<RoutePath> parseRouteInformation(RouteInformation routeInformation) async {
+  Future<RoutePath> parseRouteInformation(
+      RouteInformation routeInformation) async {
     final uri = routeInformation.uri;
 
     if (uri.pathSegments.isEmpty) {
@@ -13,6 +14,8 @@ class RouteInfoParser extends RouteInformationParser<RoutePath> {
     switch (segment) {
       case "link":
         return SNSLinksPagePath();
+      case "about":
+        return AboutPagePath();
       default:
         return UnknownPath();
     }
@@ -24,10 +27,13 @@ class RouteInfoParser extends RouteInformationParser<RoutePath> {
       return RouteInformation(uri: Uri.parse(UnknownPath().path));
     }
     if (configuration is TopPagePath) {
-       return RouteInformation(uri: Uri.parse(TopPagePath().path));
+      return RouteInformation(uri: Uri.parse(TopPagePath().path));
     }
     if (configuration is SNSLinksPagePath) {
       return RouteInformation(uri: Uri.parse(SNSLinksPagePath().path));
+    }
+    if (configuration is AboutPagePath) {
+      return RouteInformation(uri: Uri.parse(AboutPagePath().path));
     }
 
     return null;

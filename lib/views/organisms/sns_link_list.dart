@@ -19,9 +19,19 @@ class SNSLinkList extends StatelessWidget {
           {"q": Env.searchKeyword, "src": "typed_query", "f": "live"}),
     ),
     SNSLink(
-        name: tr("snsLink.note"),
-        uri: Uri.https("note.com", "/search",
-            {"context": "note", "q": Env.searchKeyword, "sort": "new"})),
+      name: tr("snsLink.youtube"),
+      uri: Uri.https(
+          "youtube.com", "/results", {"search_query": Env.searchKeyword}),
+    ),
+    SNSLink(
+      name: tr("snsLink.bluesky"),
+      uri: Uri.https("bsky.app", "/search", {"q": Env.searchKeyword}),
+    ),
+    SNSLink(
+      name: tr("snsLink.note"),
+      uri: Uri.https("note.com", "/search",
+          {"context": "note", "q": Env.searchKeyword, "sort": "new"}),
+    ),
   ];
 
   @override
