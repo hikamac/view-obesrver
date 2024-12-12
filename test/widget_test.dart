@@ -22,7 +22,8 @@ void main() {
   //     child: MyApp(),
   //   ));
   //   await tester.pumpAndSettle();
-
-  expect(1, 1);
+  test("dummy", () {
+    expect(1, 1);
+  });
   // });
 }
