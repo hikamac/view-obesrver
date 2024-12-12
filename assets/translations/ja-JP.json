@@ -6,9 +6,18 @@
   "news":
   {
     "pageTitle": "News",
-    "viewCountApproach": "{video} がもうすぐ{count}再生です！",
-    "viewCountReached": "{video} が{count}再生を達成しました！",
-    "anniversary": "{date}は {video} の投稿記念日です！"
+    "viewCountApproach": {
+      "prefix": "",
+      "suffix": " がもうすぐ{count}再生です！"
+    },
+    "viewCountReached": {
+      "prefix": "",
+      "suffix": " が{count}再生を達成しました！"
+    },
+    "anniversary": {
+      "prefix": "{date}は ",
+      "suffix": " の投稿記念日です！"
+    }
   },
   "snsLink":
   {

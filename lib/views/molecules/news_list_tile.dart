@@ -14,26 +14,66 @@ class NewsListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late IconData iconData;
-    late String title;
+    late TextSpan titleSpan;
+
     switch (news.category) {
       case NewsCategory.viewCountApproach:
         iconData = Icons.trending_up;
-        title = "news.viewCountApproach".tr(namedArgs: {
-          "video": news.videoTitle,
-          "count": "${news.getMilestone()}"
-        });
+        titleSpan = TextSpan(
+          style: DefaultTextStyle.of(context).style,
+          children: [
+            TextSpan(text: "news.viewCountApproach.prefix".tr()),
+            TextSpan(
+              text: news.videoTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            TextSpan(
+              text: "news.viewCountApproach.suffix".tr(
+                namedArgs: {"count": "${news.getMilestone()}"},
+              ),
+            ),
+          ],
+        );
+        break;
+
       case NewsCategory.viewCountReached:
         iconData = Icons.celebration;
-        title = "news.viewCountReached".tr(namedArgs: {
-          "video": news.videoTitle,
-          "count": "${news.getMilestone()}"
-        });
+        titleSpan = TextSpan(
+          style: DefaultTextStyle.of(context).style,
+          children: [
+            TextSpan(text: "news.viewCountReached.prefix".tr()),
+            TextSpan(
+              text: news.videoTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            TextSpan(
+              text: "news.viewCountReached.suffix".tr(
+                namedArgs: {"count": "${news.getMilestone()}"},
+              ),
+            ),
+          ],
+        );
+        break;
+
       case NewsCategory.anniversary:
         iconData = Icons.cake;
-        title = "news.anniversary".tr(namedArgs: {
-          "video": news.videoTitle,
-          "date": news.getFormattedPubDate()!,
-        });
+        titleSpan = TextSpan(
+          style: DefaultTextStyle.of(context).style,
+          children: [
+            TextSpan(
+              text: "news.anniversary.prefix".tr(
+                namedArgs: {"date": news.getFormattedPubDate()!},
+              ),
+            ),
+            TextSpan(
+              text: news.videoTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            TextSpan(text: "news.anniversary.suffix".tr()),
+          ],
+        );
+        break;
+
       default:
         return const ListTile(
           leading: Icon(Icons.info_outline),
@@ -42,7 +82,7 @@ class NewsListTile extends StatelessWidget {
 
     return ListTile(
       leading: Icon(iconData),
-      title: Text(title),
+      title: RichText(text: titleSpan),
       contentPadding: EdgeInsets.symmetric(horizontal: isMobile ? 2.0 : 20.0),
     );
   }

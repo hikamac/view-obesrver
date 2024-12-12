@@ -37,6 +37,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: tr("common.siteTitle"),
+      onGenerateTitle: (context) => tr("common.siteTitle"),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
