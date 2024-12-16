@@ -1,5 +1,4 @@
 {
-  "projectId": "observe-notify",
   "hosting": {
     "public": "build/web",
     "ignore": [

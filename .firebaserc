@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "observe-notify"
-  }
+    "production": "observe-notify",
+    "default": "observe-notify-stg"
+  },
+  "targets": {},
+  "etags": {}
 }

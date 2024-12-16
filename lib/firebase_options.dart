@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:view_observer/env/env.dart';
+import 'package:view_observer/env/environment.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -18,7 +19,8 @@ import 'package:view_observer/env/env.dart';
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      final env = environment;
+      return env.isProd ? webPrd : webStg;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -53,7 +55,7 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static final FirebaseOptions web = FirebaseOptions(
+  static final FirebaseOptions webPrd = FirebaseOptions(
     apiKey: Env.firebaseApiKey,
     appId: '1:154219614987:web:77862c5ba97435c40f080e',
     messagingSenderId: '154219614987',
@@ -61,5 +63,15 @@ class DefaultFirebaseOptions {
     authDomain: 'observe-notify.firebaseapp.com',
     storageBucket: 'observe-notify.appspot.com',
     measurementId: 'G-8RLTLM9MVS',
+  );
+
+  static final FirebaseOptions webStg = FirebaseOptions(
+    apiKey: Env.firebaseApiKey,
+    appId: '1:644139762939:web:a26c976ff95c85b453dc5e',
+    messagingSenderId: '644139762939',
+    projectId: 'observe-notify-stg',
+    authDomain: 'observe-notify-stg.firebaseapp.com',
+    storageBucket: 'observe-notify-stg.firebasestorage.app',
+    measurementId: 'G-KV3PTK400V',
   );
 }

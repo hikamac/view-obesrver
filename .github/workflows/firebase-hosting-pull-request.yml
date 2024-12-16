@@ -7,11 +7,15 @@ jobs:
   build_and_preview:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'master' && 'production' || 'staging' }}
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2.12.0
         with:
           channel: 'stable'
+      - name: Set Environment Name
+        run: echo "ENVIRONMENT=${{ github.ref_name == 'master' && 'production' || 'staging' }}" >> $GITHUB_ENV
       - run: flutter clean
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
@@ -20,12 +24,12 @@ jobs:
           SEARCH_KEYWORD: ${{ secrets.SEARCH_KEYWORD }}
       - run: flutter config --enable-web
       - run: flutter test --platform=chrome
-      - run: flutter build web
+      - run: flutter build web --dart-define=FLAVOR=${{ env.ENVIRONMENT }}
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_OBSERVE_NOTIFY }}'
-          projectId: observe-notify
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
 
       - name: Setup Firebase CLI
         run: npm install -g firebase-tools
@@ -35,6 +39,6 @@ jobs:
           npm install
           cd ../
           npm install
-          firebase deploy --only functions --project observe-notify
+          firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
