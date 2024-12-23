@@ -19,6 +19,8 @@ admin.initializeApp(options);
 
 export * from "./controller/apis/firestore/news-api";
 export * from "./controller/apis/firestore/video-api";
+export * from "./controller/apis/google-api/spread-sheet-api";
+export * from "./controller/apis/probe-api";
 export * from "./controller/batches/anniversary-batch";
 export * from "./controller/batches/export-spreadsheet-batch";
 export * from "./controller/batches/fix-view-history-creted.batch";
