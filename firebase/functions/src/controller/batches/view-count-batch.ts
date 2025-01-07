@@ -26,10 +26,11 @@ export const fetchViewCountsAndStore = functions
       logger.debug(`ENV_NAME: ${envVarsName} SECRET_NAME: ${secretVarsName}`);
       const env = await SecretManager.setUpAsync(envVarsName);
       const youtubeDataApiKey = env.get<string>("YOUTUBE_DATA_API_KEY");
+      logger.debug(`youtubeDataApiKey: ${youtubeDataApiKey}`);
       const viewCountUseCase = new ViewCountUseCase(youtubeDataApiKey);
       const secret = await SecretManager.setUpAsync(secretVarsName);
       const targetVideoIds = secret.get<string[]>("TARGET_VIDEO_IDS");
-
+      logger.debug(`targetVideoIds: ${targetVideoIds}`);
       await viewCountUseCase.fetchAndStore(targetVideoIds);
     } catch (error) {
       functions.logger.error(error);
